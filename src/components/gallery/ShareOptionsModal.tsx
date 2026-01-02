@@ -90,8 +90,8 @@ export const ShareOptionsModal = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md" dir={language === 'he' ? 'rtl' : 'ltr'}>
+    <Dialog open={isOpen} onOpenChange={onClose} z-Index={9999999} >
+      <DialogContent className="sm:max-w-md z-[9999999]" dir={language === 'he' ? 'rtl' : 'ltr'}>
         <DialogHeader>
           <DialogTitle className="text-center">שתף תמונה</DialogTitle>
         </DialogHeader>

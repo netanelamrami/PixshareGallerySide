@@ -1,6 +1,7 @@
 export interface BusinessCard {
   name: string;
   icon: string;
+  iconDarkMode: string;
   description: string;
   phoneNumber: string;
   gmail: string;

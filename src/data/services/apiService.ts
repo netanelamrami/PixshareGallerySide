@@ -410,6 +410,22 @@ https://gallery.pixshare.live/${eventLink}?userid=${userId}
       body: JSON.stringify({ eventId, actionType })
     });
   },
+  async getPostDescriptionByEventId(eventId: number): Promise<any> {
+  try {
+    const res = await fetch(
+      `${BASE_URL}/Event/GetPostDescriptionByEventId/${eventId}`
+    );
 
+    if (!res.ok) {
+      throw new Error("Failed to get post description");
+    }
+
+    const responseText = await res.text();
+    return responseText ? JSON.parse(responseText) : null;
+  } catch (error) {
+    console.error("GetPostDescriptionByEventId API Error:", error);
+    throw error;
+  }
+  }
 }
 

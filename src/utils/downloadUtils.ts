@@ -25,8 +25,8 @@ export const downloadImage = async (src: string, filename: string) => {
 };
 
 export const downloadMultipleImages = async (
-  images: Array<{ src: string; id: string }>,
-  fileName: string = "images"
+  images: Array<{ src: string; id: string, name: string }>,
+  fileName: string = "images.zip"
 ) => {
   const zip = new JSZip();
 
@@ -35,12 +35,12 @@ export const downloadMultipleImages = async (
       await new Promise((resolve) => setTimeout(resolve, index * 200));
       const response = await fetch(image.src);
       const blob = await response.blob();
-      zip.file(`image-${image.id}.jpg`, blob);
+      zip.file(image.id, blob);
     })
   );
 
   const zipBlob = await zip.generateAsync({ type: "blob" });
-  saveAs(zipBlob, "images.zip");
+  saveAs(zipBlob, fileName);
   return true;
 };
 

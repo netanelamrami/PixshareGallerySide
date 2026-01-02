@@ -186,7 +186,6 @@ const Index = () => {
   const handleViewAllPhotos = () => {
     setIsLoadingAllPhotos(true);
     setGalleryType('all');
-    console.log('Viewing all photos');
     setTimeout(() => {
       setShowGallery(true);
       setIsLoadingAllPhotos(false);

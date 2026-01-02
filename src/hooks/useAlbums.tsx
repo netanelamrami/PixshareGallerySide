@@ -61,7 +61,6 @@ export const useAlbums = (eventId: string, images: GalleryImage[]) => {
       imageCount: imagesByAlbum[album.id]?.length || 0,
       thumbnail: imagesByAlbum[album.id]?.[0]?.src
     }));
-    console.log(updatedAlbums.find(album => album.imageCount > 0)?.id || null)
     setFirstAlbum(updatedAlbums.find(album => album.imageCount > 0)?.id || null);
     setAlbums(updatedAlbums);
     setAlbumImages(imagesByAlbum);

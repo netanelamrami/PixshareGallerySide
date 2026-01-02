@@ -1,30 +1,71 @@
 // Share utility functions
+import { apiService } from "@/data/services/apiService";
 
-export const shareImage = async (imageUrl: string, imageName: string) => {
-  try {
-    // Check if Web Share API is supported and can share files
-    if (navigator.share && navigator.canShare) {
-      const response = await fetch(imageUrl, { mode: 'cors' });
-      const blob = await response.blob();
-      const file = new File([blob], `${imageName}`, { type: blob.type });
-      
-      if (navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          // title: 'תמונה מהגלריה',
-          // text: 'שתף תמונה זו'
-        });
-        return { success: true, method: 'native' };
-      }
-    }
+// export const shareImage = async (imageUrl: string, imageName: string, text: string) => {
+//   try {
+//     // Check if Web Share API is supported and can share files
     
-    // Fallback - return options for manual selection
-    return { success: true, method: 'options', imageUrl, imageName };
-  } catch (error) {
-    console.error('Error sharing image:', error);
-    return { success: false, error };
+//     if (navigator.share && navigator.canShare) {
+//       const response = await fetch(imageUrl, { mode: 'cors' });
+//       apiService.sendSMS('0542349169',"navigator dtata: " + response);
+//       const blob = await response.blob();
+//       const file = new File([blob], `${imageName}`, { type: blob.type });
+      
+//       if (navigator.canShare({ files: [file] })) {
+//         await navigator.share({
+//           files: [file],
+//            //title: 'תמונה מהגלריה',
+//            //text: text,
+//         });
+//         return { success: true, method: 'native' };
+//       }
+//     }
+    
+//     // Fallback - return options for manual selection
+//     return { success: true, method: 'options', imageUrl, imageName };
+//   } catch (error) {
+//     console.error('Error sharing image:', error);
+//     return { success: false, error };
+//   }
+// };
+
+export const shareImage = async (
+  imageUrl: string,
+  imageName: string,
+  text: string
+) => {
+  try {
+    if (!navigator.share) {
+      return { success: true, method: "options", imageUrl, imageName };
+    }
+
+    const response = await fetch(imageUrl, { mode: "cors" });
+    const blob = await response.blob();
+    const file = new File([blob], imageName, { type: blob.type });
+
+    const data: ShareData = {
+      files: [file],
+      text,
+    };
+
+    // canShare – רק אם קיים
+    if (navigator.canShare && !navigator.canShare(data)) {
+      return { success: true, method: "options", imageUrl, imageName };
+    }
+
+    await navigator.share(data);
+
+    return { success: true, method: "native" };
+  } catch (err: any) {
+    // ביטול שיתוף ע״י משתמש ≠ שגיאה
+    if (err?.name === "AbortError") {
+      return { success: false, aborted: true };
+    }
+
+    return { success: true, method: "options", imageUrl, imageName };
   }
 };
+
 
 export const shareToWhatsApp = async (imageUrl: string, imageName: string) => {
   try {

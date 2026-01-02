@@ -4,6 +4,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { Instagram, Facebook, Globe, Mail, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BusinessCard } from "@/types/businessCard";
+import { useTheme } from "next-themes"
 
 interface PhotographerCardProps {
   businessCard: BusinessCard;
@@ -13,6 +14,7 @@ interface PhotographerCardProps {
 
 export const PhotographerCard = ({ businessCard, isOpen, onClose }: PhotographerCardProps) => {
   const { language } = useLanguage();
+  const { setTheme, theme } = useTheme()
 
   const handleLink = (url: string) => {
     if (url) {
@@ -49,7 +51,8 @@ export const PhotographerCard = ({ businessCard, isOpen, onClose }: Photographer
         
         <div className="flex flex-col items-center gap-4 py-4">
           {/* Logo */}
-          {businessCard.icon && (
+
+          {businessCard.icon && theme !== "dark" && (
             // <div className="w-24 h-24 rounded-full overflow-hidden bg-muted flex items-center justify-center">
               <img 
                 src={businessCard.icon} 
@@ -58,7 +61,15 @@ export const PhotographerCard = ({ businessCard, isOpen, onClose }: Photographer
               />
             // </div>
           )}
-
+         {businessCard.iconDarkMode && theme === "dark" && (
+            // <div className="w-24 h-24 rounded-full overflow-hidden bg-muted flex items-center justify-center">
+              <img 
+                src={businessCard.icon} 
+                alt={businessCard.name}
+                className="w-full h-full object-cover max-w-[200px]"
+              />
+            // </div>
+          )}
           {/* Name */}
           <h3 className="text-xl font-semibold text-center">
             {businessCard.name}

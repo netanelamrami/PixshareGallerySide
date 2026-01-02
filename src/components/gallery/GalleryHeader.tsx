@@ -58,7 +58,7 @@ export const GalleryHeader = ({
         { value: 5, icon: Grid3x3, label: "עמודות 5" },
       ];
   return (
-    <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-md border-b border-border shadow-sm w-full left-0 flex" dir={language === 'he' ? 'rtl' : 'ltr'} >
+    <div className="sticky top-0 z-40  bg-background/95 backdrop-blur-md border-b border-border shadow-sm w-full left-0 flex" dir={language === 'he' ? 'rtl' : 'ltr'} >
       <div className="w-full px-2 py-2 pb-1 left-0">
         <div className="flex items-center justify-between left-0">
           <div className="flex flex-col gap-0.5">

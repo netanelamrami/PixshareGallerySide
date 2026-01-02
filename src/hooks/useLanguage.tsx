@@ -38,14 +38,17 @@ const translations = {
     'gallery.backToGallery': 'חזור לגלרייה',
     'gallery.downloadImage': 'הורד תמונה',
     'gallery.addToFavorites': 'הוסף למועדפים',
-    
+    'gallery.shareWithTextBt': 'שתף',
+    'gallery.shareWithTextHeader': 'בחר תבנית טקסט לשיתוף',
+
+
     // Common
     'common.of': 'מתוך',
     'common.imageSize': 'גודל תמונה',
     'common.backToGallery': 'חזרה לגלריה',
     
     // Image Save functionality
-    'imageSave.title': 'שמירת תמונה',
+    'imageSave.title': 'לשמירה בגלריה',
     'imageSave.subtitle': 'לחץ ארוך על התמונה כדי לשמור אותה',
     'imageSave.instructions.title': 'איך לשמור תמונה באייפון:',
     'imageSave.instructions.step1': 'לחץ ארוך על התמונה למטה',
@@ -67,7 +70,8 @@ const translations = {
     'share.title': 'שתף את הגלריה',
     'share.description': 'סרוק את הקוד או שתף את הקישור',
     'share.copyLink': 'העתק קישור',
-    
+    'share.copyText': 'העתק טקסט',
+
     // Toasts - הודעות טוסט
     'toast.downloadAll.title': 'הורדת תמונות',
     'toast.downloadAll.description': 'התחלת הורדת כל התמונות...',
@@ -321,7 +325,8 @@ const translations = {
     'gallery.backToGallery': 'Back to gallery',
     'gallery.downloadImage': 'Download image',
     'gallery.addToFavorites': 'Add to Favorites',    
-    
+    'gallery.shareWithTextBt': 'Share',
+    'gallery.shareWithTextHeader': 'LinkedIn Post Template',
     // Floating Navbar
     'navbar.support': 'Support',
     'navbar.allPhotos': 'All Photos',
@@ -334,6 +339,8 @@ const translations = {
     'share.title': 'Share Gallery',
     'share.description': 'Scan the code or share the link',
     'share.copyLink': 'Copy Link',
+     'share.copyText': 'Copy Text',
+
     
     // Toasts
     'toast.downloadAll.title': 'Downloading Images',
@@ -516,7 +523,7 @@ const translations = {
     'common.backToGallery': 'Back to Gallery',
     
     // Image Save functionality
-    'imageSave.title': 'Save Image',
+    'imageSave.title': 'Save to Gallery',
     'imageSave.subtitle': 'Long press on the image to save it',
     'imageSave.instructions.title': 'How to save image on iPhone:',
     'imageSave.instructions.step1': 'Long press on the image below',

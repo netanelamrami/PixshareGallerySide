@@ -1,6 +1,7 @@
 export interface GalleryImage {
   mediumSrc: string;
   largeSrc: string;
+  name: string;
   id: string;
   src: string;
   alt: string;

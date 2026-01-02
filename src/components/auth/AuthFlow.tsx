@@ -302,11 +302,11 @@ export const AuthFlow = ({ event, onComplete, onCancel, setUsers }: AuthFlowProp
           onComplete(registrationResponse.user); 
 
           
-          toast({
-            title: t('auth.eventRegistrationSuccess'),
-            description: t('auth.eventRegistrationDesc'),
-            variant: "default",
-          });
+          // toast({
+          //   title: t('auth.eventRegistrationSuccess'),
+          //   description: t('auth.eventRegistrationDesc'),
+          //   variant: "default",
+          // });
         } else {
           throw new Error("Registration by photo failed");
         }

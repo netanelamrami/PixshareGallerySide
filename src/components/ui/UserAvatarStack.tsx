@@ -75,7 +75,7 @@ export const UserAvatarStack = ({totalImages, onDownloadAll, event, onAuthComple
             </PopoverTrigger>
             <PopoverContent align="end" className="w-48 p-2" dir={language === 'he' ? 'rtl' : 'ltr'}>
 
-            {isMobile && totalImages > 0  && (
+            {isMobile && totalImages > 0  && totalImages < 600  && (
               <>
                 <Button 
                     variant="ghost"
@@ -218,7 +218,7 @@ export const UserAvatarStack = ({totalImages, onDownloadAll, event, onAuthComple
           <PopoverContent align="end" className="w-48 p-2"  dir={language === 'he' ? 'rtl' : 'ltr'}>
 
             <div className="space-y-2">
-          {isMobile && totalImages > 0  && (
+          {isMobile && totalImages > 0  && totalImages < 600  && (
               <>
             <Button
                 variant="ghost"
