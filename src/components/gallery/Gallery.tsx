@@ -322,13 +322,12 @@ export const Gallery = ({
       })),
       `${event.name}.zip`
     );
+    setIsLoadingDownloadZip(false);
 
     if (success) {
       for (let index = 0; index < selectedImages.size; index++) {
         await apiService.updateStatistic(event.id, "DownloadClick");
       }
-      setIsLoadingDownloadZip(false);
-
       
       toast({
         title: t("toast.downloadComplete.title"),
@@ -337,13 +336,14 @@ export const Gallery = ({
           selectedImages.size.toString()
         ),
       });
+          setIsLoadingDownloadZip(false);
+
     } else {
       toast({
         title: t("downloadModal.partialError"),
         description: t("downloadModal.partialErrorDesc"),
         variant: "destructive",
       });
-      setIsLoadingDownloadZip(false);
     }
   };
 

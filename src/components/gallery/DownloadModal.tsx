@@ -77,7 +77,7 @@ export const DownloadModal = ({ isOpen, onClose, imageCount, images = [], autoDo
         // Direct download for small albums
         setStep('success');
         const success = await downloadMultipleImages(
-          images.map(img => ({ src: formData.quality == 'high' ? img.largeSrc : img.mediumSrc  , id: img.id }))
+          images.map(img => ({ src: formData.quality == 'high' ? img.largeSrc : img.mediumSrc, id: img.id, name: img.name || img.id }))
           ,event.name
         ); 
         

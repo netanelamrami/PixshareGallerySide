@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { GalleryImage } from "@/types/gallery";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Button } from "@/components/ui/button";
+import { motion, AnimatePresence } from "framer-motion";
+
 import {
   X,
   ChevronLeft,
@@ -34,6 +36,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { ImageSave } from "@/pages/ImageSave";
+import { Console } from "console";
 
 interface LightboxModalProps {
   isOpen: boolean;
@@ -83,8 +86,37 @@ export const LightboxModal = ({
   const currentPost = postsEventData[currentPostIndex];
   const [showIOSSave, setShowIOSSave] = useState(false);
   const [iosSaveParams, setIOSSaveParams] = useState<string | null>(null);
+  const dragStart = useRef<{ x: number; y: number } | null>(null);
 
+  const [direction, setDirection] = useState(0);
   const currentImage = images[currentIndex];
+const imgRef = useRef<HTMLImageElement | null>(null);
+
+useEffect(() => {
+  const handleViewportChange = () => {
+    const isZoomed = window.visualViewport?.scale > 1;
+    if(isZoomed)
+    setIsZoomed(true);
+    else
+      setInterval(() =>{
+        setIsZoomed(false);
+    
+      }, 2000);
+  };
+
+  window.visualViewport?.addEventListener("resize", handleViewportChange);
+  window.visualViewport?.addEventListener("scroll", handleViewportChange);
+
+  return () => {
+    window.visualViewport?.removeEventListener("resize", handleViewportChange);
+    window.visualViewport?.removeEventListener("scroll", handleViewportChange);
+  };
+}, []);
+
+useEffect(() => {
+  setImageLoaded(false);
+}, [currentImage]);
+
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -127,15 +159,21 @@ export const LightboxModal = ({
 
   // Touch handlers for swipe gestures
   const handleTouchStart = (e: React.TouchEvent) => {
+    if (isZoomed) return;
+
     touchStartX.current = e.touches[0].clientX;
     touchEndX.current = null;
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
+    if (isZoomed) return;
+
     touchEndX.current = e.touches[0].clientX;
   };
 
   const handleTouchEnd = () => {
+    if (isZoomed) return;
+
     if (touchStartX.current === null || touchEndX.current === null) return;
 
     const deltaX = touchStartX.current - touchEndX.current;
@@ -144,10 +182,10 @@ export const LightboxModal = ({
     if (Math.abs(deltaX) > minSwipeDistance) {
       if (deltaX > 0 && currentIndex < images.length - 1) {
         // Swipe left - next image
-        onNext();
+        goNextImage();
       } else if (deltaX < 0 && currentIndex > 0) {
         // Swipe right - previous image
-        onPrevious();
+        goPrevImage();
       }
     }
 
@@ -156,6 +194,15 @@ export const LightboxModal = ({
   };
 
   if (!isOpen || !currentImage) return null;
+  const goNextImage = () => {
+    setDirection(1);
+    onNext();
+  };
+
+  const goPrevImage = () => {
+    setDirection(-1);
+    onPrevious();
+  };
 
   const handleDownload = async () => {
     if (!currentImage) return;
@@ -163,27 +210,31 @@ export const LightboxModal = ({
 
     // Check if iOS - redirect to image save page
     if (isIOS()) {
-      const scrollPosition =
-        window.scrollY || document.documentElement.scrollTop;
-      const currentPath = window.location.pathname;
-      const eventLink = currentPath.startsWith("/")
-        ? currentPath.slice(1)
-        : currentPath;
+      setDownloadIsLoading(true);
+      await handleShare(false);
+      setDownloadIsLoading(false);
 
-      const params = new URLSearchParams({
-        url: currentImage.largeSrc,
-        name: currentImage.id,
-        returnState: encodeURIComponent(JSON.stringify({ fromLightbox: true })),
-        lightboxIndex: currentIndex.toString(),
-        scrollPosition: scrollPosition.toString(),
-        eventLink: eventLink || "",
-        galleryType: galleryType,
-      });
+      // const scrollPosition =
+      //   window.scrollY || document.documentElement.scrollTop;
+      // const currentPath = window.location.pathname;
+      // const eventLink = currentPath.startsWith("/")
+      //   ? currentPath.slice(1)
+      //   : currentPath;
 
-      const url = `/image-save?${params.toString()}`;
-      // שמור state והראה modal פנימי
-      setIOSSaveParams(url);
-      setShowIOSSave(true);
+      // const params = new URLSearchParams({
+      //   url: currentImage.largeSrc,
+      //   name: currentImage.id,
+      //   returnState: encodeURIComponent(JSON.stringify({ fromLightbox: true })),
+      //   lightboxIndex: currentIndex.toString(),
+      //   scrollPosition: scrollPosition.toString(),
+      //   eventLink: eventLink || "",
+      //   galleryType: galleryType,
+      // });
+
+      // const url = `/image-save?${params.toString()}`;
+      // // שמור state והראה modal פנימי
+      // setIOSSaveParams(url);
+      // setShowIOSSave(true);
       return;
     }
 
@@ -230,11 +281,11 @@ export const LightboxModal = ({
     toast({ title: t("toast.linkCopied.title") });
   };
 
-  const handleShare = async () => {
+  const handleShare = async (shareIisLoading = true) => {
     if (!currentImage) return;
 
     apiService.updateStatistic(event.id, "SharePhotoClick");
-    setShareIsLoading(true);
+    setShareIsLoading(shareIisLoading);
     const result = await shareImage(
       currentImage.largeSrc,
       `${currentImage.id}`,
@@ -371,7 +422,7 @@ export const LightboxModal = ({
                 <Button
                   variant="ghost"
                   // size="icon"
-                  onClick={handleShare}
+                  onClick={handleDownload}
                   className="text-foreground hover:bg-accent"
                 >
                   {downloadIsLoading ? (
@@ -404,7 +455,7 @@ export const LightboxModal = ({
         <Button
           variant="ghost"
           size="icon"
-          onClick={onPrevious}
+          onClick={goPrevImage}
           className={`absolute ${
             language === "he" ? "right-4" : "left-4"
           } top-1/2 -translate-y-1/2 z-20 text-foreground hover:bg-accent/80 w-12 h-12 bg-black/20 backdrop-blur-sm`}
@@ -421,7 +472,7 @@ export const LightboxModal = ({
         <Button
           variant="ghost"
           size="icon"
-          onClick={onNext}
+          onClick={goNextImage}
           className={`absolute ${
             language === "he" ? "left-4" : "right-4"
           } top-1/2 -translate-y-1/2 z-20 text-foreground hover:bg-accent/80 w-12 h-12 bg-black/20 backdrop-blur-sm`}
@@ -437,36 +488,44 @@ export const LightboxModal = ({
       {/* Image Container */}
       <div
         className="absolute inset-0 flex items-center justify-center p-4 cursor-pointer"
-        onClick={onClose}
+        onClick={(e) => e.stopPropagation()}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        <div
-          className={cn(
-            "relative w-full h-full flex items-center justify-center transition-transform duration-300",
-            isZoomed ? "scale-150 cursor-move" : "cursor-pointer"
-          )}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {!imageLoaded && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="animate-spin w-8 h-8 border-2 border-foreground border-t-transparent rounded-full"></div>
-            </div>
-          )}
-
-          <img
-            src={currentImage.mediumSrc}
-            alt={currentImage.alt}
+        <AnimatePresence initial={false} mode="wait">
+          <motion.div
+            key={currentImage.id}
             className={cn(
-              "max-w-full w-auto h-auto object-contain shadow-gallery transition-opacity duration-300 max-h-[calc(100vh-12vh)]",
-              imageLoaded ? "opacity-100" : "opacity-0"
+              "relative w-full h-full flex items-center justify-center",
+              isZoomed ? "scale-150 cursor-move" : "cursor-pointer"
             )}
-            onLoad={() => setImageLoaded(true)}
-            draggable={false}
-          />
-        </div>
+            initial={{ opacity: 0, x: 100 * direction }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -100 * direction }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          >
+            {!imageLoaded && (
+              <div className="absolute z-50 inset-0 flex items-center justify-center">
+                <div className="animate-spin w-8 h-8 border-2 border-foreground border-t-transparent rounded-full"></div>
+              </div>
+            )}
+            <img
+              src={currentImage.mediumSrc}
+              alt={currentImage.alt}
+                ref={imgRef}
+
+              className={cn(
+                "max-w-full w-auto h-auto object-contain transition-opacity duration-300 max-h-[calc(100vh-12vh)]",
+                imageLoaded ? "opacity-100" : "opacity-0"
+              )}
+              onLoad={() => setImageLoaded(true)}
+              draggable={false}
+            />
+          </motion.div>
+        </AnimatePresence>
       </div>
+
       {isLinkedinShareOpen && currentImage && (
         <div className="absolute inset-0 z-[99999] flex items-center justify-center bg-black/50">
           <Dialog
@@ -486,7 +545,7 @@ export const LightboxModal = ({
                   variant="ghost"
                   size="icon"
                   disabled={currentPostIndex === 0}
-                  onClick={goPrev}
+                  onClick={goNext}
                   className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
                   <ChevronLeft className="h-6 w-6" />
@@ -500,7 +559,7 @@ export const LightboxModal = ({
                   variant="ghost"
                   size="icon"
                   disabled={currentPostIndex === postsEventData.length - 1}
-                  onClick={goNext}
+                  onClick={goPrev}
                   className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
                   <ChevronRight className="h-6 w-6" />
@@ -602,7 +661,7 @@ export const LightboxModal = ({
       </div>
 
       {/* Click outside to close overlay */}
-      <div className="absolute inset-0 cursor-pointer" onClick={onClose} />
+      {/* <div className="absolute inset-0 cursor-pointer" onClick={onClose} /> */}
 
       {showIOSSave && iosSaveParams && (
         <Dialog open={showIOSSave} onOpenChange={setShowIOSSave}>
@@ -611,15 +670,13 @@ export const LightboxModal = ({
             dir={language === "he" ? "rtl" : "ltr"}
           >
             <DialogTitle></DialogTitle>
-     
-                <ImageSave
-                  imageUrl={currentImage.largeSrc}
-                  imageName={currentImage.id}
-                  language={language}
-                  onClose={() => setShowIOSSave(false)}
-                />
 
-            
+            <ImageSave
+              imageUrl={currentImage.largeSrc}
+              imageName={currentImage.id}
+              language={language}
+              onClose={() => setShowIOSSave(false)}
+            />
 
             <DialogFooter className="p-4">
               <Button
