@@ -8,9 +8,11 @@ interface SelfieCaptureProps {
   onCapture: (imageData: string) => void;
   onBack: () => void;
   autoOpenCamera?: boolean;
+  withBTAction: boolean;
+  variant?: "default" | "kimama";
 }
 
-export const SelfieCapture = ({ onCapture, onBack, autoOpenCamera }: SelfieCaptureProps) => {
+export const SelfieCapture = ({ onCapture, onBack, variant = "default", autoOpenCamera, withBTAction = true }: SelfieCaptureProps) => {
   const [isCapturing, setIsCapturing] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -36,56 +38,56 @@ export const SelfieCapture = ({ onCapture, onBack, autoOpenCamera }: SelfieCaptu
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   const startCamera = async () => {
     // try {
-      
+
     //   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      //     alert('המצלמה אינה נתמכת בדפדפן זה');
-      //     return;
-      //   }
-      
-      //   const constraints = {
-        //     video: { 
-          //       facingMode: "user",
-          //       width: { ideal: 640, min: 320 },
-          //       height: { ideal: 480, min: 240 }
-          //     },
-          //     audio: false
-          //   };
-          
+    //     alert('המצלמה אינה נתמכת בדפדפן זה');
+    //     return;
+    //   }
+
+    //   const constraints = {
+    //     video: { 
+    //       facingMode: "user",
+    //       width: { ideal: 640, min: 320 },
+    //       height: { ideal: 480, min: 240 }
+    //     },
+    //     audio: false
+    //   };
+
     //   const stream = await navigator.mediaDevices.getUserMedia(constraints);      
     //   streamRef.current = stream;
 
     //   setIsCapturing(true);
     //   setTimeout(() => {
     //     if (videoRef.current) {
-      //       videoRef.current.srcObject = stream;
+    //       videoRef.current.srcObject = stream;
     //       videoRef.current.play().catch(error => {
     //         console.error("Error playing video:", error);
     //       });
     //       console.log('Video element source set to stream');
     //     } else {
-      //       console.warn('videoRef.current עדיין null אחרי ההשהייה');
-      //     }
-      //   }, 350);
-      
-      
-      
-      // } catch (error) {
-        //   console.error("Error accessing camera:", error);
-        //   if (error.name === 'NotAllowedError') {
-          //     alert('יש לאשר גישה למצלמה כדי לצלם סלפי');
-          //   } else if (error.name === 'NotFoundError') {
-            //     alert('מצלמה לא נמצאה במכשיר');
-            //   } else {
-              //     alert('שגיאה בגישה למצלמה. נסה להעלות תמונה במקום זאת.');
-              //   }
-              // } finally {
-                //}
-      setIsLoading(true);
-      fileInputRef.current?.click();
-      setIsLoading(false);
-    };
-    
-   const stopCamera = () => {
+    //       console.warn('videoRef.current עדיין null אחרי ההשהייה');
+    //     }
+    //   }, 350);
+
+
+
+    // } catch (error) {
+    //   console.error("Error accessing camera:", error);
+    //   if (error.name === 'NotAllowedError') {
+    //     alert('יש לאשר גישה למצלמה כדי לצלם סלפי');
+    //   } else if (error.name === 'NotFoundError') {
+    //     alert('מצלמה לא נמצאה במכשיר');
+    //   } else {
+    //     alert('שגיאה בגישה למצלמה. נסה להעלות תמונה במקום זאת.');
+    //   }
+    // } finally {
+    //}
+    setIsLoading(true);
+    fileInputRef.current?.click();
+    setIsLoading(false);
+  };
+
+  const stopCamera = () => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
@@ -143,12 +145,15 @@ export const SelfieCapture = ({ onCapture, onBack, autoOpenCamera }: SelfieCaptu
   };
 
   return (
-    <div className="space-y-6"    dir={language === 'he' ? 'rtl' : 'ltr'} >
-      <div className="text-center mb-6">
-        <p className="text-muted-foreground">
-          {t('auth.selfieInstruction')}
-        </p>
-      </div>
+    <div className="space-y-6" dir={language === 'he' ? 'rtl' : 'ltr'} >
+      {!capturedImage && (
+
+        <div className="text-center mb-6">
+          <p className="text-muted-foreground">
+            {t('auth.selfieInstruction')}
+          </p>
+        </div>
+      )}
 
       {/* Camera/Image display */}
       <div className="relative bg-muted rounded-lg overflow-hidden aspect-[4/3] flex items-center justify-center">
@@ -165,7 +170,13 @@ export const SelfieCapture = ({ onCapture, onBack, autoOpenCamera }: SelfieCaptu
                   {t('auth.selectFile')}
                 </Button>
               )}
-              <Button onClick={startCamera} disabled={isLoading}>
+              <Button onClick={startCamera} disabled={isLoading}
+                className={`flex-1 ${variant === "kimama"
+                    ? `
+                    bg-gradient-to-r from-[#FF8C00] via-[#FFA13A] to-[#FFB703] text-white shadow-md hover:shadow-lg active:scale-95 transition-all
+                  `
+                    : ""
+                  }`}>
                 {isLoading ? (
                   <div className={`flex items-center gap-2 ${language === 'he' ? 'flex-row-reverse' : 'flex-row'}`}>
                     <span>{t('auth.loading')}</span>
@@ -183,19 +194,19 @@ export const SelfieCapture = ({ onCapture, onBack, autoOpenCamera }: SelfieCaptu
         )}
 
         {isCapturing && (
-        //   <video
-        //     ref={videoRef}
-        //     autoPlay
-        //     playsInline
-        //     muted
-        //  className="fixed inset-0 w-screen h-screen object-cover scale-x-[-1]"
-        //   />
-        <input
-          type="file"
-          accept="image/*"
-          capture="user" // מפעיל את המצלמה הקדמית (סלפי)
-      
-        />
+          //   <video
+          //     ref={videoRef}
+          //     autoPlay
+          //     playsInline
+          //     muted
+          //  className="fixed inset-0 w-screen h-screen object-cover scale-x-[-1]"
+          //   />
+          <input
+            type="file"
+            accept="image/*"
+            capture="user" // מפעיל את המצלמה הקדמית (סלפי)
+
+          />
 
         )}
 
@@ -235,11 +246,25 @@ export const SelfieCapture = ({ onCapture, onBack, autoOpenCamera }: SelfieCaptu
         onChange={handleFileSelect}
         className="hidden"
       />
+
+       {capturedImage && (
+
+        <div className="text-center mb-6">
+          <p className="text-muted-foreground">
+            {language === 'he'
+          ? `רק את.ה יכול לראות את תמונת הסלפי הזאת`
+          : `This selfie is visible only to you`}
+    
+          </p>
+        </div>
+      )}
+
+
       {/* Action buttons */}
       <div className="flex gap-3">
         {isCapturing && (
           <>
-           
+
             <Button
               type="button"
               variant="outline"
@@ -248,10 +273,13 @@ export const SelfieCapture = ({ onCapture, onBack, autoOpenCamera }: SelfieCaptu
             >
               {t('common.back')}
             </Button>
-             <Button
+            <Button
               onClick={capturePhoto}
-              className="flex-1"
-            >
+              className={`flex-1 ${variant === "kimama"
+                  ? `  bg-gradient-to-r from-[#FF8C00] via-[#FFA13A] to-[#FFB703] text-white shadow-md hover:shadow-lg active:scale-95 transition-all`
+                  : ""
+                }`}>
+
               <Camera className="w-4 h-4 mr-2" />
               {t('auth.takePhoto')}
             </Button>
@@ -268,18 +296,25 @@ export const SelfieCapture = ({ onCapture, onBack, autoOpenCamera }: SelfieCaptu
               <RotateCcw className="w-4 h-4 mr-2" />
               {t('auth.retake')}
             </Button>
+            {withBTAction && (
 
               <Button
-              onClick={confirmPhoto}
-              className="flex-1"
-            >
-              <Check className="w-4 h-4 mr-2" />
-              {t('auth.confirm')}
-            </Button>
+                onClick={confirmPhoto}
+                className={`flex-1 ${variant === "kimama"
+                    ? `
+                    bg-gradient-to-r from-[#FF8C00] via-[#FFA13A] to-[#FFB703] text-white shadow-md hover:shadow-lg active:scale-95 transition-all
+                  `
+                    : ""
+                  }`}>
+
+                <Check className="w-4 h-4 mr-2" />
+                {t('auth.confirm')}
+              </Button>
+            )}
           </>
         )}
 
-        {/* {!isCapturing && !capturedImage && (
+        {!isCapturing && !capturedImage &&  onBack &&(
           <Button
             type="button"
             variant="outline"
@@ -288,7 +323,7 @@ export const SelfieCapture = ({ onCapture, onBack, autoOpenCamera }: SelfieCaptu
           >
             {t('common.back')}
           </Button>
-        )} */}
+        )}
       </div>
     </div>
   );

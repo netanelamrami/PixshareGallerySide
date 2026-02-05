@@ -20,17 +20,18 @@ interface UserAvatarStackProps {
   onAuthComplete?: (userData: { contact: string; otp: string; selfieData: string; notifications: boolean }) => void;
   className?: string;
   onViewMyPhotos: () => void;
+  galletyCustomerType?: "kimama" | "regular";
 }
 
-export const UserAvatarStack = ({totalImages, onDownloadAll, event, onAuthComplete, className,onViewMyPhotos }: UserAvatarStackProps) => {
-  const {users, currentUser, isAuthenticated, switchUser, logout, addUser } = useMultiUserAuth();
+export const UserAvatarStack = ({ totalImages, onDownloadAll, event, onAuthComplete, className, onViewMyPhotos, galletyCustomerType }: UserAvatarStackProps) => {
+  const { users, currentUser, isAuthenticated, switchUser, logout, addUser } = useMultiUserAuth();
   const { language } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [showAddUser, setShowAddUser] = useState(false);
-    const isMobile = useIsMobile();
-    const [isSupportOpen, setIsSupportOpen] = useState(false);
-    const questions = faqData[language] || faqData.he;
-  
+  const isMobile = useIsMobile();
+  const [isSupportOpen, setIsSupportOpen] = useState(false);
+  const questions = faqData[language] || faqData.he;
+
   // const [showAuthModal, setShowAuthModal] = useState(false);
   // const [forceUpdate, setForceUpdate] = useState(0);
 
@@ -49,10 +50,10 @@ export const UserAvatarStack = ({totalImages, onDownloadAll, event, onAuthComple
   //   // const handleAuthStateChanged = (event: CustomEvent) => {
   //   //   setForceUpdate(prev => prev + 1);
   //   // };
-    
+
   //   // window.addEventListener('userAdded', handleUserAdded);
   //   // window.addEventListener('authStateChanged', handleAuthStateChanged);
-    
+
   //   return () => {
   //     window.removeEventListener('userAdded', handleUserAdded);
   //     window.removeEventListener('authStateChanged', handleAuthStateChanged);
@@ -75,9 +76,9 @@ export const UserAvatarStack = ({totalImages, onDownloadAll, event, onAuthComple
             </PopoverTrigger>
             <PopoverContent align="end" className="w-48 p-2" dir={language === 'he' ? 'rtl' : 'ltr'}>
 
-            {isMobile && totalImages > 0  && totalImages < 600  && (
-              <>
-                <Button 
+              {isMobile && totalImages > 0 && totalImages < 600 && (
+                <>
+                  <Button
                     variant="ghost"
                     className="w-full h-auto p-2 justify-start hover:bg-muted/50"
                     onClick={() => {
@@ -85,37 +86,37 @@ export const UserAvatarStack = ({totalImages, onDownloadAll, event, onAuthComple
                       setIsOpen(false);
                     }}
                   >
-                      <Download className="h-4 w-4 mr-2" />
-                      <span className="text-sm">
-                          {language === 'he' ? 'הורד הכל' : 'Download All'}
-                      </span>
+                    <Download className="h-4 w-4 mr-2" />
+                    <span className="text-sm">
+                      {language === 'he' ? 'הורד הכל' : 'Download All'}
+                    </span>
                   </Button>
                   <Button
                     variant="ghost"
                     className="w-full h-auto p-2 justify-start hover:bg-muted/50"
                     onClick={() => {
-                          window.dispatchEvent(new CustomEvent('toggleSelectionMode')); 
+                      window.dispatchEvent(new CustomEvent('toggleSelectionMode'));
                       setIsOpen(false);
                     }}
                   >
-                      <CheckSquare className="h-4 w-4 mr-2" />
-                      <span className="text-sm">
-                          {language === 'he' ? 'בחר תמונות' : 'Select Images'}
-                      </span>
+                    <CheckSquare className="h-4 w-4 mr-2" />
+                    <span className="text-sm">
+                      {language === 'he' ? 'בחר תמונות' : 'Select Images'}
+                    </span>
                   </Button>
                 </>
-            )}
-              {isMobile &&  (
+              )}
+              {isMobile && (
                 <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsSupportOpen(true)}
-                    className="rounded-full px-2 py-2"
-                  >
-                    <MessageCircle className="h-3 w-3 mr-1" />
-                    <span>{language === 'he' ? 'תמיכה' : 'Support'}</span>
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsSupportOpen(true)}
+                  className="rounded-full px-2 py-2"
+                >
+                  <MessageCircle className="h-3 w-3 mr-1" />
+                  <span>{language === 'he' ? 'תמיכה' : 'Support'}</span>
                 </Button>
-                )}
+              )}
               <Button
                 variant="ghost"
                 className="w-full h-auto p-2 justify-start hover:bg-muted/50"
@@ -131,7 +132,7 @@ export const UserAvatarStack = ({totalImages, onDownloadAll, event, onAuthComple
           </Popover>
         </div>
 
-      <FAQSupportDialog
+        <FAQSupportDialog
           isOpen={isSupportOpen}
           setIsOpen={setIsSupportOpen}
           questions={questions}
@@ -172,10 +173,10 @@ export const UserAvatarStack = ({totalImages, onDownloadAll, event, onAuthComple
   return (
     <>
       <div className={cn("relative", className)}>
-        
+
         <Popover open={isOpen} onOpenChange={setIsOpen} >
           <PopoverTrigger asChild >
-            
+
             <Button
               variant="ghost"
               size="sm"
@@ -189,20 +190,20 @@ export const UserAvatarStack = ({totalImages, onDownloadAll, event, onAuthComple
                     <UserCircle className="h-4 w-4" />
                   </AvatarFallback>
                 </Avatar>
-                
+
                 {/* Stacked avatars for other users */}
                 {hasMultipleUsers && (
                   <div className="absolute -right-1 -top-1">
                     <Avatar className="h-5 w-5 border-2 border-background shadow-sm">
-                      <AvatarImage 
-                        src={otherUsers[0]?.photoUrl || otherUsers[0]?.selfieImage} 
-                        alt={otherUsers[0]?.name || 'User'} 
+                      <AvatarImage
+                        src={otherUsers[0]?.photoUrl || otherUsers[0]?.selfieImage}
+                        alt={otherUsers[0]?.name || 'User'}
                       />
                       <AvatarFallback className="text-xs">
                         <UserCircle className="h-3 w-3" />
                       </AvatarFallback>
                     </Avatar>
-                    
+
                     {/* Additional users indicator */}
                     {/* {otherUsers.length > 1 && (
                       <div className="absolute -right-1 -bottom-1 h-3 w-3 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-bold">
@@ -213,44 +214,44 @@ export const UserAvatarStack = ({totalImages, onDownloadAll, event, onAuthComple
                 )}
               </div>
             </Button>
-                     
+
           </PopoverTrigger>
-          <PopoverContent align="end" className="w-48 p-2"  dir={language === 'he' ? 'rtl' : 'ltr'}>
+          <PopoverContent align="end" className="w-48 p-2" dir={language === 'he' ? 'rtl' : 'ltr'}>
 
             <div className="space-y-2">
-          {isMobile && totalImages > 0  && totalImages < 600  && (
-              <>
-            <Button
-                variant="ghost"
-                className="w-full h-auto p-2 justify-start hover:bg-muted/50"
-                onClick={() => {
-                  onDownloadAll();
-                  setIsOpen(false);
-                }}
-              >
-                  <Download className="h-4 w-4 mr-2" />
-                  <span className="text-sm">
+              {isMobile && totalImages > 0 && totalImages < 600 && (
+                <>
+                  <Button
+                    variant="ghost"
+                    className="w-full h-auto p-2 justify-start hover:bg-muted/50"
+                    onClick={() => {
+                      onDownloadAll();
+                      setIsOpen(false);
+                    }}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    <span className="text-sm">
                       {language === 'he' ? 'הורד הכל' : 'Download All'}
-                  </span>
-              </Button>
-              <Button
-                variant="ghost"
-                className="w-full h-auto p-2 justify-start hover:bg-muted/50"
-                onClick={() => {
-                      window.dispatchEvent(new CustomEvent('toggleSelectionMode')); 
-                  setIsOpen(false);
-                }}
-              >
-                  <CheckSquare className="h-4 w-4 mr-2" />
-                  <span className="text-sm">
+                    </span>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full h-auto p-2 justify-start hover:bg-muted/50"
+                    onClick={() => {
+                      window.dispatchEvent(new CustomEvent('toggleSelectionMode'));
+                      setIsOpen(false);
+                    }}
+                  >
+                    <CheckSquare className="h-4 w-4 mr-2" />
+                    <span className="text-sm">
                       {language === 'he' ? 'בחר תמונות' : 'Select Images'}
-                  </span>
-              </Button>
+                    </span>
+                  </Button>
                 </>
-            )}
-            
-            {isMobile &&  (
-              <Button
+              )}
+
+              {isMobile && (
+                <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setIsSupportOpen(true)}
@@ -258,60 +259,64 @@ export const UserAvatarStack = ({totalImages, onDownloadAll, event, onAuthComple
                 >
                   <MessageCircle className="h-3 w-3 mr-1" />
                   <span>{language === 'he' ? 'תמיכה' : 'Support'}</span>
-              </Button>
-            )}
-
-              {/* Current User */}
-              <div className="px-2 py-2 bg-muted/50 rounded-md">
-                <p className="text-xs text-muted-foreground mb-1">
-                  {language === 'he' ? 'משתמש פעיל' : 'Active User'}
-                </p>
-                <div className="flex items-center gap-2">
-                  <Avatar className="w-6 h-6">
-                    <AvatarImage src={currentUser.photoUrl || currentUser.selfieImage} alt={currentUser.name == 'Anonymous' ? 'User' : currentUser.name || 'User'} />
-                    <AvatarFallback>
-                      <UserCircle className="w-4 h-4" />
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="text-sm font-medium truncate">
-                    {currentUser.name == 'Anonymous' ? 'User' : currentUser.name || (language === 'he' ? 'משתמש' : 'User')}
-                  </span>
-                </div>
-              </div>
-
-              {/* Other Users */}
-              {otherUsers.length > 0 && (
-                <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground px-2">
-                    {language === 'he' ? 'החלף משתמש' : 'Switch User'}
-                  </p>
-                  {otherUsers.map((user) => (
-                    <Button
-                      key={user.id}
-                      variant="ghost"
-                      className="w-full h-auto p-2 justify-start hover:bg-muted/50"
-                      onClick={() => {
-                        switchUser(user.id);
-                        setIsOpen(false);
-                        // Trigger user photos reload
-                      }}
-                    >
-                      <Avatar className="w-5 h-5 mr-2">
-                        <AvatarImage src={user.photoUrl} alt={user.name || 'User'} />
-                        <AvatarFallback>
-                          <UserCircle className="w-3 h-3" />
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="text-sm truncate flex-1 text-left">
-                        {user.name == 'Anonymous' ? 'User' : currentUser.name  || (language === 'he' ? 'משתמש' : 'User')}
-                      </span>
-                    </Button>
-                  ))}
-                </div>
+                </Button>
               )}
 
+              {/* Current User */}
+              {galletyCustomerType !== 'kimama' && (
+                <>
+                  {console.log("galletyCustomerType:", galletyCustomerType)}
+                  <div className="px-2 py-2 bg-muted/50 rounded-md">
+                    <p className="text-xs text-muted-foreground mb-1">
+                      {language === 'he' ? 'משתמש מוצג' : 'Active User'}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <Avatar className="w-6 h-6">
+                        <AvatarImage src={currentUser.photoUrl || currentUser.selfieImage} alt={currentUser.name == 'Anonymous' ? 'User' : currentUser.name || 'User'} />
+                        <AvatarFallback>
+                          <UserCircle className="w-4 h-4" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-sm font-medium truncate">
+                        {currentUser.name == 'Anonymous' ? 'User' : currentUser.name || (language === 'he' ? 'משתמש' : 'User')}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Other Users */}
+                  {otherUsers.length > 0 && (
+                    <div className="space-y-1 max-h-[200px] overflow-y-auto">
+                      <p className="text-xs text-muted-foreground px-2 ">
+                        {language === 'he' ? 'החלף משתמש' : 'Switch User'}
+                      </p>
+                      {otherUsers.map((user) => (
+                        <Button
+                          key={user.id}
+                          variant="ghost"
+                          className="w-full h-auto p-2 justify-start hover:bg-muted/50"
+                          onClick={() => {
+                            switchUser(user.id);
+                            setIsOpen(false);
+                            // Trigger user photos reload
+                          }}
+                        >
+                          <Avatar className="w-5 h-5 mr-2">
+                            <AvatarImage src={user.photoUrl || user.selfieImage} alt={user.name || 'User'} />
+                            <AvatarFallback>
+                              <UserCircle className="w-3 h-3" />
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="text-sm truncate ">
+                            {user.name == 'Anonymous' ? 'User' : user.name || (language === 'he' ? 'משתמש' : 'User')}
+                          </span>
+                        </Button>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
               {/* Add User - only if less than 3 users */}
-              {users.length < 3 && event.needDetect && (
+              {users.length < 50 && (
                 <Button
                   variant="ghost"
                   className="w-full h-auto p-2 justify-start hover:bg-muted/50"
@@ -328,7 +333,7 @@ export const UserAvatarStack = ({totalImages, onDownloadAll, event, onAuthComple
                   </span>
                 </Button>
               )}
-              
+
               {/* Logout */}
               <Button
                 variant="ghost"
@@ -349,13 +354,13 @@ export const UserAvatarStack = ({totalImages, onDownloadAll, event, onAuthComple
       </div>
 
       <FAQSupportDialog
-          isOpen={isSupportOpen}
-          setIsOpen={setIsSupportOpen}
-          questions={questions}
-          event={event}
-        />
+        isOpen={isSupportOpen}
+        setIsOpen={setIsSupportOpen}
+        questions={questions}
+        event={event}
+      />
 
-      <AddUserModal 
+      <AddUserModal
         isOpen={showAddUser}
         onClose={() => setShowAddUser(false)}
         event={event}

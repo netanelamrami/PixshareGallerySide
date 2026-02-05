@@ -40,6 +40,7 @@ interface GalleryProps {
   selectedAlbum?: string | null;
   selectionMode?: boolean;
   lightboxState?: { isOpen: boolean; currentIndex: number } | null;
+  galleryCustomerType?: "kimama" | "regular";
   onLightboxStateChange?: (
     state: { isOpen: boolean; currentIndex: number } | null
   ) => void;
@@ -53,6 +54,7 @@ interface GalleryProps {
     notifications: boolean;
   }) => void;
   onViewMyPhotos: () => void;
+
 }
 
 export const Gallery = ({
@@ -71,6 +73,7 @@ export const Gallery = ({
   onViewMyPhotos,
   lightboxState,
   onLightboxStateChange,
+  galleryCustomerType = "regular",
 }: GalleryProps) => {
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(
     null
@@ -574,7 +577,6 @@ export const Gallery = ({
 
   //const displayedImages = getDisplayedImages();
   const visibleImages = getDisplayedImages(); // displayedImages.slice(0, displayedImagesCount);
-  console.log("Visible images count:", visibleImages);
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -586,6 +588,7 @@ export const Gallery = ({
         onDownloadAll={handleDownloadAll}
         onDownloadSelected={handleDownloadSelected}
         onToggleSelection={handleCancelSelection}
+        galletyCustomerType={galleryCustomerType}
         onShare={handleShare}
         isSelectionMode={isSelectionModeForButtomModal}
         selectedCount={selectedImages.size}

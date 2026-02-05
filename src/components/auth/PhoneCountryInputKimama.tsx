@@ -7,33 +7,36 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useLanguage } from "@/hooks/useLanguage";
 import { useToast } from "@/hooks/use-toast";
 import countries from "@/types/contries";
+import { ArrowLeft, ArrowRight, ChevronRight } from "lucide-react";
 
-interface PhoneCountryInputProps {
+interface PhoneCountryInputKimamaProps {
   onSubmit: (phone: string, notifications: boolean) => void;
   onBack: () => void;
   submitText?: string;
+  variant?: "default" | "kimama";
+
 }
 
-export const PhoneCountryInput = ({ onSubmit, onBack, submitText = 'auth.sendCode' }: PhoneCountryInputProps) => {
+export const PhoneCountryInputKimama = ({ onSubmit, onBack, variant = "default", submitText = 'auth.sendCode' }: PhoneCountryInputKimamaProps) => {
   const [countryCode, setCountryCode] = useState("+972");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [notifications, setNotifications] = useState(true);
+  const [notifications, setNotifications] = useState(false);
   const { t, language } = useLanguage();
   const { toast } = useToast();
 
   const validatePhoneNumber = (number: string, countryCode: string): boolean => {
     const selectedCountry = countries.find(country => country.code === countryCode);
     if (!selectedCountry) return false;
-    
+
     // Remove leading zero and any spaces/dashes
     const cleanNumber = number.replace(/^0/, '').replace(/[\s-]/g, '');
-    
+
     return selectedCountry.pattern.test(cleanNumber);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!phoneNumber.trim()) {
       toast({
         title: t('toast.error.title'),
@@ -61,17 +64,50 @@ export const PhoneCountryInput = ({ onSubmit, onBack, submitText = 'auth.sendCod
   return (
     <div className="space-y-6" dir={language === 'he' ? 'rtl' : 'ltr'}>
       <div className="text-center mb-6">
+        <div
+          className={`inline-flex items-center justify-center w-16 h-16 rounded-full mb-4 ${variant === "kimama"
+            ? "bg-[rgba(255,179,71,0.25)]"
+            : "bg-[hsl(179_40%_60%/0.2)]"
+            }`}
+        >  <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className={`w-8 h-8 ${variant === "kimama"
+            ? "text-[#FFB347]"
+            : "text-[hsl(179_40%_60%)]"
+            }`} aria-hidden="true"
+        >
+            <path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"></path>
+          </svg>
+        </div>
+
         <h2 className="text-xl font-bold mb-2">{t('auth.enterPhone')}</h2>
         <p className="text-muted-foreground">
-          {t('auth.phoneInstruction')}
+          {t('auth.phoneInstructionKimama')}
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        
+
         <div className="flex gap-2" dir="ltr">
-          <Select value={countryCode} onValueChange={setCountryCode}>
-            <SelectTrigger className="w-[90px]">
+          <Select value={countryCode} onValueChange={setCountryCode} >
+            <SelectTrigger className={`w-[90px] ${
+                variant === "kimama"
+                  ? `
+                    focus:ring-2
+                    focus:ring-[#FFB347]/40
+                    focus:ring-offset-0
+                    focus-visible:ring-[#FFB347]/40
+                  `
+                  : ""
+              }`}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -88,23 +124,32 @@ export const PhoneCountryInput = ({ onSubmit, onBack, submitText = 'auth.sendCod
               ))}
             </SelectContent>
           </Select>
-          
+
           <Input
             type="tel"
             placeholder={t('auth.enterPhone')}
             value={phoneNumber}
             onChange={(e) => setPhoneNumber(e.target.value)}
-            className="flex-1"
             required
+               className={`flex-1 ${
+                variant === "kimama"
+                  ? `
+                    focus:ring-2
+                    focus:ring-[#FFB347]/40
+                    focus:ring-offset-0
+                    focus-visible:ring-[#FFB347]/40
+                  `
+                  : ""
+              }`}
             dir="ltr"
           />
         </div>
-        
+
         {/* <div className="text-xs text-muted-foreground text-center" dir={language === 'he' ? 'rtl' : 'ltr'}>
           {t('auth.phoneExample')}
         </div> */}
 
-        <div className="flex items-center text-center space-x-2 space-x-reverse" dir={language === 'he' ? 'rtl' : 'ltr'}>
+        <div className="flex start-4 opacity-0  items-center gap-2 text-center space-x-2 space-x-reverse" dir={language === 'he' ? 'rtl' : 'ltr'}>
           <Checkbox
             id="notifications"
             checked={notifications}
@@ -112,7 +157,7 @@ export const PhoneCountryInput = ({ onSubmit, onBack, submitText = 'auth.sendCod
           />
           <label
             htmlFor="notifications"
-            className="text-sm text-center font-medium leading-none align-middle peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            className="text-sm  text-center font-medium leading-none align-middle peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
           >
             {t('auth.notifyNewPhotos')}
           </label>
@@ -122,17 +167,35 @@ export const PhoneCountryInput = ({ onSubmit, onBack, submitText = 'auth.sendCod
           {onBack && (
 
             <Button
-            type="button"
-            variant="outline"
-            onClick={onBack}
-            className="flex-1  mt-4"
+              type="button"
+              variant="outline"
+              onClick={onBack}
+              className={`flex-1  mt-4 ${variant === "kimama"
+                  ? "text-[#FFB347]"
+                  : "text-[hsl(179_40%_60%)]"
+                }`}
             >
-            {t('common.back')}
-          </Button>
+              {t('common.back')}
+            </Button>
           )}
-          <Button type="submit" className="flex-1  mt-4">
+          <Button
+            type="submit"
+            className={`flex-1 mt-4 flex items-center justify-center py-7 text-lg font-semibold rounded-xl
+              transition-all shadow-md hover:shadow-lg active:scale-95
+              ${variant === "kimama"
+                          ? "text-white bg-gradient-to-r from-[#FF8C00] via-[#FFA13A] to-[#FFB703] "
+                          : "text-[hsl(179_40%_60%)] bg-[hsl(179_40%_60%/0.15)]"
+                        }
+            `}
+            dir={language === "he" ? "rtl" : "ltr"}
+          >
             {t(submitText)}
+            {language === "he"
+              ? <ArrowLeft className="w-6 h-6 ml-2" />
+              : <ArrowRight className="w-6 h-6 ml-2" />}
           </Button>
+
+
         </div>
       </form>
     </div>

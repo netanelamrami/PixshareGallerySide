@@ -36,15 +36,21 @@ useEffect(() => {
 }, [currentUser]);
 
   const toggleSubscription = () => {
+    console.log("toggleSubscription clicked", currentUser.sendNotification);
     if (currentUser.sendNotification == true) {
       // כבה התראות
-      localStorage.setItem('notificationSubscription', 'false');
-      setIsSubscribed(false);
-      setSendNotification(currentUser.id, false,'',true);
-      toast({
-        title: t('notifications.notificationsDisabled'),
-        description: t('notifications.notificationsDisabled'),
-      });
+          window.dispatchEvent(
+          new CustomEvent('notificationOpen', {
+            detail: "off" 
+          }));
+
+      // localStorage.setItem('notificationSubscription', 'false');
+      // setIsSubscribed(false);
+      // setSendNotification(currentUser.id, false,'',true);
+      // toast({
+      //   title: t('notifications.notificationsDisabled'),
+      //   description: t('notifications.notificationsDisabled'),
+      // });
     } else if(currentUser.sendNotification == false){
       // הפעל התראות
       // localStorage.setItem('notificationSubscription', 'true');
@@ -57,7 +63,7 @@ useEffect(() => {
       // });
         window.dispatchEvent(
           new CustomEvent('notificationOpen', {
-            detail: "contact" 
+            detail: "on" 
           }));
 
     }else{

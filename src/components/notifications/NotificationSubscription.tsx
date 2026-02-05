@@ -15,11 +15,11 @@ import { Label } from "../ui/label";
 import countries from "@/types/contries";
 import { getDownloadFormData, saveDownloadFormData } from "@/utils/downloadUtils";
 
-type NotificationStep = "collapsed" | "contact" | "otp" | "complete" | "hidden";
+type NotificationStep = "collapsed" | "contact" | "otp" | "on" | "hidden" | "off";
 
 interface NotificationSubscriptionProps {
   event: event;
-  onSubscribe: (contact: string, notifications: boolean) => void;
+  onSubscribe: () => void;
   onClose: () => void;
   initialStep?: NotificationStep;
 }
@@ -81,6 +81,7 @@ useEffect(() => {
 
       return () => clearTimeout(timer);
     }
+    console.log("currentStep changed to:", currentStep);
   }, [currentStep]);
   const handleContactSubmit = async (contact: string, notificationPreference: boolean) => {
     setContactInfo(contact);
@@ -128,25 +129,36 @@ useEffect(() => {
       });
       return;
     }
-    setCurrentStep("complete");
+    setCurrentStep("hidden");
 
     //change notification preference
 const content = isEmailMode 
   ? formData.email 
   : `${formData.countryCode}${formData.phone.startsWith('05') ? formData.phone.substring(1) : formData.phone}`;
-    console.log(content)
   setSendNotification(currentUser.id, true, content, isEmailMode);
     if(isEmailMode){
       await apiService.sendWelcomeEmail(content,event.eventLink, currentUser.id)
     }else{
       await apiService.sendWelcomeSMS(content,event.eventLink , currentUser.id.toString())
     }
-
+    toast({
+        title: t('notifications.notificationsEnabled'),
+        description: t('notifications.subscribeSuccess'),
+      });
+    // setCurrentStep("hidden");
+    onSubscribe(); 
     setTimeout(() => {
-        setCurrentStep("hidden");
-        onSubscribe(contactInfo, notifications); 
       }, 20000);
-    };
+  };
+
+  const turnOffNotification = () => {
+      localStorage.setItem('notificationSubscription', 'false');
+      setSendNotification(currentUser.id, false,'',true);
+      toast({
+        title: t('notifications.notificationsDisabled'),
+        description: t('notifications.notificationsDisabled'),
+      });
+  };
 
 const validatePhoneNumber = (number: string, countryCode: string): boolean => {
     const selectedCountry = countries.find(country => country.code === countryCode);
@@ -163,7 +175,9 @@ const validatePhoneNumber = (number: string, countryCode: string): boolean => {
     collapsed: "",
     contact: t('notifications.subscribeTo'),
     otp: t('auth.otpVerification'),
-    complete: t('notifications.subscribeSuccess')
+    complete: t('notifications.subscribeSuccess'),
+    on: t('notifications.register'),
+    off: t('notifications.off'),
   };
 
   if (currentStep === "hidden") {
@@ -190,7 +204,7 @@ const validatePhoneNumber = (number: string, countryCode: string): boolean => {
               <div className="flex gap-1">
                 <Button
                   size="sm"
-                  onClick={() => setCurrentStep("contact")}
+                  onClick={() => setCurrentStep("on")}
                   className="h-7 px-2 text-xs"
                 >
                   {language === 'he' ? 'הירשם' : 'Subscribe'}
@@ -233,7 +247,7 @@ const validatePhoneNumber = (number: string, countryCode: string): boolean => {
           </div>
           
           {/* Progress indicator */}
-          {currentStep !== "complete" && (
+          {currentStep !== "on"  && currentStep !== "off" && (
             <div className="mt-4 flex gap-2">
               {["contact", "otp"].map((step, index) => (
                 <div
@@ -352,7 +366,7 @@ const validatePhoneNumber = (number: string, countryCode: string): boolean => {
                 <Button
                   type="button"
                   variant="outline"
-                  //  onClick={onBack}
+                   onClick={() => setCurrentStep("on")}
                   className="flex-1"
                   >
                   {t('common.back')}
@@ -383,7 +397,70 @@ const validatePhoneNumber = (number: string, countryCode: string): boolean => {
             />
           )}
 
-          {currentStep === "complete" && (
+          {currentStep === "on" && (
+            <div className="text-center">
+              {/* <div className="bg-green-100 dark:bg-green-900/30 p-4 rounded-lg mb-4">
+                <div className="text-green-600 dark:text-green-400 text-sm">
+                  ✓ {t('notifications.subscribeSuccess')}
+                </div>
+              </div> */}
+
+              
+              <div className="bg-muted/50 p-4 rounded-lg mb-4 space-y-2">
+                <p className="text-sm text-muted-foreground">
+                    {language === 'he' ? 'העתק ושמור את הקישור' : 'Copy and save your link'}
+                    <br />
+
+                    {language === 'he' ? (
+                      <>
+                        לצפייה ישירה בגלריה האישית של{' '}
+                  <span className="font-medium text-foreground px-1 rounded-md bg-foreground/5">
+                          {currentUser.name}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        to view{' '}
+                        <span className="font-medium text-foreground">
+                          {currentUser.name}'s
+                        </span>{' '}
+                        personal gallery directly
+                      </>
+                    )}
+                  </p>
+
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={`https://gallery.pixshare.live/${event.eventLink}?userid=${currentUser.id}`}
+                    readOnly
+                    className="flex-1 text-xs bg-background"
+                    dir="ltr"
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      navigator.clipboard.writeText(`https://gallery.pixshare.live/${event.eventLink}?userid=${currentUser.id}`);
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 2000);
+                      toast({
+                        title: language === 'he' ? 'הקישור הועתק' : 'Link copied',
+                        description: language === 'he' ? 'הקישור האישי שלך הועתק ללוח' : 'Your personal link has been copied to clipboard',
+                      });
+                    }}
+                  >
+                    {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </div>
+            
+              <Button onClick={() =>{ setCurrentStep("contact");}} className="w-full">
+                {t('notifications.on')}
+              </Button>
+            </div>
+          )}
+
+          {currentStep === "off" && (
             <div className="text-center">
               {/* <div className="bg-green-100 dark:bg-green-900/30 p-4 rounded-lg mb-4">
                 <div className="text-green-600 dark:text-green-400 text-sm">
@@ -423,8 +500,8 @@ const validatePhoneNumber = (number: string, countryCode: string): boolean => {
                 </div>
               </div>
             
-              <Button onClick={() =>{ onSubscribe(contactInfo, notifications); setCurrentStep("hidden");}} className="w-full">
-                {t('notifications.close')}
+              <Button onClick={() =>{ turnOffNotification(); setCurrentStep("hidden");}} className="w-full bg-red-400 hover:bg-red-500">
+                {t('notifications.off')}
               </Button>
             </div>
           )}

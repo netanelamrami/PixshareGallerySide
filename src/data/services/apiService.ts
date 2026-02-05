@@ -1,8 +1,9 @@
-import { User } from "@/types/auth";
+import { RegisterFacesRequest, User } from "@/types/auth";
 import { statistic } from "@/types/event";
 
-const BASE_URL = "https://api.pixshare.live/PixApi/api";
+ const BASE_URL = "https://api.pixshare.live/PixApi/api";
 // const BASE_URL = "http://localhost:5050/api";
+ //const BASE_URL = "https://api.pixshare.live/PixshareTest/api";
 
 export const apiService = {
   async sendSMS(phoneNumber: string, message: string, otp: boolean = true) {
@@ -55,7 +56,36 @@ export const apiService = {
       throw error;
     }
   },
+async registerSelectedFaces(data: RegisterFacesRequest) {
+  const res = await fetch(`${BASE_URL}/User/register-selected-faces`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
 
+  if (!res.ok) {
+    throw new Error("Failed to register selected faces");
+  }
+
+  return res.json();
+},
+async reRegisterSelectedFaces(data: RegisterFacesRequest) {
+  const res = await fetch(`${BASE_URL}/User/re-register`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to register selected faces");
+  }
+
+  return res.json();
+},
   async verifyOTP(phoneNumberOrEmail: string, otp: string): Promise<boolean> {
     try {
       const request = {
@@ -139,6 +169,26 @@ export const apiService = {
       throw error;
     }
   },
+  
+  async addUser(formData: FormData): Promise<any> {
+    try {
+      const res = await fetch(`${BASE_URL}/User/addUser`, {
+        method: 'POST', 
+        body: formData
+      });
+      
+      if (!res.ok) {
+        throw new Error("Failed to register user by photo");
+      }
+      
+      const responseText = await res.text();
+      return responseText ? JSON.parse(responseText) : null;
+    } catch (error) {
+      console.error('User Registration by Photo API Error:', error);
+      throw error;
+    }
+  },
+
 
   async sendWelcomeSMS(phoneNumber: string, eventLink: string, userId: string): Promise<any> {
     try {
@@ -254,9 +304,9 @@ https://gallery.pixshare.live/${eventLink}?userid=${userId}
     }
   },
 
-  async getImages(userId: number, eventId: number): Promise<any> {
+  async getImages(userId: number, eventId: number, allMyUsersPhotos: boolean = false): Promise<any> {
     try {
-      const queryParams = `?userid=${userId}&eventid=${eventId}`;
+      const queryParams = `?userid=${userId}&eventid=${eventId}&allMyUsersPhotos=${allMyUsersPhotos}`;
       const url = `${BASE_URL}/User/getImages${queryParams}`;
       const res = await fetch(url);
       

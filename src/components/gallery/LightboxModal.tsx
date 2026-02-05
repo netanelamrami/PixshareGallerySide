@@ -620,7 +620,9 @@ useEffect(() => {
             language === "he" ? "text-center" : "text-center"
           }`}
         >
-          {event.id == "691" && (
+
+        {/* plugos events */}
+          {event.id == "691" || event.photographerId == "234c9045-95f9-46b8-8bee-32060c40bc3c" && (
             <>
               <button
                 className=" mb-3 sm:w-auto mx-auto flex items-center justify-center gap-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:opacity-90 transition-all duration-300"
@@ -649,7 +651,7 @@ useEffect(() => {
               </p>
             </>
           )}
-          {event.id != "691" && !(showIOSSave && iosSaveParams) && (
+          {(event.id != "691" && event.photographerId != "234c9045-95f9-46b8-8bee-32060c40bc3c") && !(showIOSSave && iosSaveParams) && (
             <>
               <p className="text-sm opacity-80 mb-3">
                 {currentIndex + 1} {t("common.of")} {displayedImagesLength} •

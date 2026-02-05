@@ -25,3 +25,21 @@ export interface AuthState {
   currentUser: User | null;
   users: User[];
 }
+
+export interface SelectedFace {
+  index: number;
+  imageUrl: string;
+  name: string;
+}
+
+
+export type RegisterFacesRequest = {
+  reRegister ?: boolean;
+  eventId: number;
+  contactInfo: string;
+  authenticateBy: "Email" | "PhoneNumber" | "Selfie";
+  faces: {
+    imageUrl: string;
+    name: string;
+  }[];
+};

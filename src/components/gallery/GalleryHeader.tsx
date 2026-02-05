@@ -23,6 +23,7 @@ interface GalleryHeaderProps {
   onShare: () => void;
   isSelectionMode: boolean;
   selectedCount: number;
+  galletyCustomerType?: "kimama" | "regular";
   onAuthComplete?: (userData: { contact: string; otp: string; selfieData: string; notifications: boolean }) => void;
   onViewMyPhotos: () => void;
 }
@@ -40,6 +41,8 @@ export const GalleryHeader = ({
   selectedCount,
   onAuthComplete,
   onViewMyPhotos,
+  galletyCustomerType = "regular",
+
 }: GalleryHeaderProps) => {
   const { t, language } = useLanguage();
   const { currentUser } = useMultiUserAuth();
@@ -96,6 +99,7 @@ export const GalleryHeader = ({
               event={event}
               onAuthComplete={onAuthComplete}
               onViewMyPhotos={onViewMyPhotos}
+              galletyCustomerType={galletyCustomerType}
             />
           </div>
 

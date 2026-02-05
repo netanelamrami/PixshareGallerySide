@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { PhoneCountryInput } from "./PhoneCountryInput";
 import { EmailInput } from "./EmailInput";
@@ -8,9 +7,17 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { useToast } from "@/hooks/use-toast";
 import { apiService } from "@/data/services/apiService";
 import { event } from "@/types/event";
-import { User } from "@/types/auth";
+import { RegisterFacesRequest, SelectedFace, User } from "@/types/auth";
+import { FaceSelectionGrid } from "./FaceSelectionGrid";
+import { FaceNamesForm } from "./FaceNamesForm";
 
-type AuthStep = "contact" | "otp" | "selfie" | "complete";
+type AuthStep =
+  | "contact"
+  | "otp"
+  | "selfie"
+  | "selectFaces"
+  | "complete"
+  | "names";
 
 interface AuthFlowProps {
   event: event;
@@ -19,59 +26,69 @@ interface AuthFlowProps {
   setUsers: (users: any[]) => void;
 }
 
-export const AuthFlow = ({ event, onComplete, onCancel, setUsers }: AuthFlowProps) => {
+export const AuthFlow = ({
+  event,
+  onComplete,
+  onCancel,
+  setUsers,
+}: AuthFlowProps) => {
   const needsFullAuth = event?.needDetect !== false;
 
-  const [currentStep, setCurrentStep] = useState<AuthStep>(needsFullAuth ? "contact" : "selfie");
+  const [currentStep, setCurrentStep] = useState<AuthStep>( needsFullAuth ? "contact" : "selfie");
+  const STEPS: AuthStep[] = ["contact", "otp", "selfie"];
+  const currentStepIndex = STEPS.indexOf(currentStep);
   const [contactInfo, setContactInfo] = useState("");
   const [notifications, setNotifications] = useState(true);
-  const [otpCode, setOtpCode] = useState("");
-  const [selfieData, setSelfieData] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
+  const [isVisible, setIsVisible] = useState(false);
+  const [detectedFaces, setDetectedFaces] = useState<string[]>([]);
+  const [selectedFaces, setSelectedFaces] = useState<Set<number>>(new Set());
+  const [selectedFaceItems, setSelectedFaceItems] = useState<SelectedFace[]>([]);
   const { t, language } = useLanguage();
   const { toast } = useToast();
-  const [isVisible, setIsVisible] = useState(false);
-
+  
   const isEmailMode = event?.registerBy === "Email";
 
   useEffect(() => {
     if (currentStep === "contact") {
       setIsVisible(true);
-    }else{
+    } else {
       const timer = setTimeout(() => {
         setIsVisible(true);
-      }, 0); 
+      }, 0);
       return () => clearTimeout(timer);
     }
-
   }, []);
 
-  const compressImage = (file: File, maxWidth: number = 800, quality: number = 0.7): Promise<Blob> => {
+  const compressImage = (
+    file: File,
+    maxWidth: number = 800,
+    quality: number = 0.7
+  ): Promise<Blob> => {
     return new Promise((resolve) => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d')!;
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d")!;
       const img = new Image();
-      
+
       img.onload = () => {
         const ratio = Math.min(maxWidth / img.width, maxWidth / img.height);
         canvas.width = img.width * ratio;
         canvas.height = img.height * ratio;
-        
+
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        canvas.toBlob(resolve, 'image/jpeg', quality);
+        canvas.toBlob(resolve, "image/jpeg", quality);
       };
-      
+
       img.src = URL.createObjectURL(file);
     });
   };
 
-  // פונקציה לטעינת נתוני המשתמש אחרי רישום
   const setUserData = async (user: any) => {
     try {
-      setLoadingMessage(t('auth.loadingUserData'));
-      sessionStorage.setItem('userid', user.id.toString());
-      sessionStorage.setItem('photourl', user.photoUrl);
+      setLoadingMessage(t("auth.loadingUserData"));
+      sessionStorage.setItem("userid", user.id.toString());
+      sessionStorage.setItem("photourl", user.photoUrl);
 
       //need it
       // const loginResponse = await apiService.loginUser(user.id);
@@ -79,7 +96,7 @@ export const AuthFlow = ({ event, onComplete, onCancel, setUsers }: AuthFlowProp
       //   setLoadingMessage(t('auth.loadingImages'));
 
       //   setLoadingMessage(t('auth.loadingRelatedUsers'));
-        
+
       //   // טעינת משתמשים קשורים
       //   try {
       //     // const usersResponse = await apiService.getUserForUser(user.id);
@@ -87,7 +104,7 @@ export const AuthFlow = ({ event, onComplete, onCancel, setUsers }: AuthFlowProp
       //   } catch (error) {
       //     console.log('No related users found or error loading users:', error);
       //   }
-        
+
       //   toast({
       //     title: t('toast.downloadComplete.title'),
       //     description: t('auth.registrationComplete'),
@@ -95,46 +112,53 @@ export const AuthFlow = ({ event, onComplete, onCancel, setUsers }: AuthFlowProp
       //   });
       // }
     } catch (error) {
-      console.error('Error loading user data:', error);
+      console.error("Error loading user data:", error);
       toast({
-        title: t('auth.alert'),
-        description: t('auth.dataError'),
+        title: t("auth.alert"),
+        description: t("auth.dataError"),
         variant: "default",
       });
-      
     }
   };
 
-  const handleContactSubmit = async (contact: string, notificationPreference: boolean) => {
+  const handleContactSubmit = async (
+    contact: string,
+    notificationPreference: boolean
+  ) => {
     setContactInfo(contact);
     setNotifications(notificationPreference);
     setIsLoading(true);
-    setLoadingMessage(isEmailMode ? t('auth.sendingEmail') : t('auth.sendingSMS'));
-    
+    setLoadingMessage(
+      isEmailMode ? t("auth.sendingEmail") : t("auth.sendingSMS")
+    );
+
     try {
       if (isEmailMode) {
         await apiService.sendOTPEmail(contact);
         toast({
-          title: t('auth.emailSent'),
-          description: t('auth.emailSentDesc'),
+          title: t("auth.emailSent"),
+          description: t("auth.emailSentDesc"),
           variant: "default",
         });
       } else {
         const verificationMessage = "קוד האימות שלך מ Pixshare, ברוכים הבאים";
         await apiService.sendSMS(contact, verificationMessage, true);
         toast({
-          title: t('auth.smsSent'),
-          description: t('auth.smsSentDesc'),
+          title: t("auth.smsSent"),
+          description: t("auth.smsSentDesc"),
           variant: "default",
         });
       }
-      
+
       setCurrentStep("otp");
     } catch (error) {
-      console.error('Error sending OTP:', error);
+      console.error("Error sending OTP:", error);
       toast({
-        title: t('auth.sendError'),
-        description: t('auth.sendErrorDesc').replace('{type}', isEmailMode ? 'אימייל' : 'SMS'),
+        title: t("auth.sendError"),
+        description: t("auth.sendErrorDesc").replace(
+          "{type}",
+          isEmailMode ? "אימייל" : "SMS"
+        ),
         variant: "destructive",
       });
     } finally {
@@ -145,65 +169,65 @@ export const AuthFlow = ({ event, onComplete, onCancel, setUsers }: AuthFlowProp
 
   const handleOTPSubmit = async (otp: string) => {
     setIsLoading(true);
-    setLoadingMessage(t('auth.verifyingCode'));
-    
+    setLoadingMessage(t("auth.verifyingCode"));
+
     try {
       const isVerified = await apiService.verifyOTP(contactInfo, otp);
       if (isVerified) {
-        setOtpCode(otp);
-        
-        // בדיקה האם המשתמש כבר רשום
-        setLoadingMessage(t('auth.checkingExistingUser'));
+
+        setLoadingMessage(t("auth.checkingExistingUser"));
         try {
           const authenticateBy = isEmailMode ? "Email" : "PhoneNumber";
-          const userAuth = await apiService.authenticateUser(contactInfo, event.id, authenticateBy);
-          
+          const userAuth = await apiService.authenticateUser(
+            contactInfo,
+            event.id,
+            authenticateBy
+          );
+
           if (userAuth && userAuth.user && userAuth.user.id) {
-            // המשתמש כבר רשום - טוען את נתוני המשתמש ומעבר ישירות לגלריה
-            setLoadingMessage(t('auth.existingUserFound'));
-            
-            // שמירת מזהה המשתמש ב-sessionStorage
-            sessionStorage.setItem('userid', userAuth.user.id.toString());
-            sessionStorage.setItem('userFullName', userAuth.user.fullName || 'Anonymous');
+            setLoadingMessage(t("auth.existingUserFound"));
+            sessionStorage.setItem("userid", userAuth.user.id.toString());
+            sessionStorage.setItem("userFullName", userAuth.user.fullName || "Anonymous");
             sessionStorage.setItem("isRegister", "true");
-            
-            // טעינת נתוני המשתמש
+
             await setUserData(userAuth.user);
-            
+
             setCurrentStep("complete");
-            onComplete(userAuth.user); 
+            onComplete(userAuth.user);
+            onCancel();
 
             toast({
-              title: t('auth.welcomeBack'),
-              description: t('auth.existingUserDesc'),
+              title: t("auth.welcomeBack"),
+              description: t("auth.existingUserDesc"),
               variant: "default",
             });
           } else {
-            // משתמש חדש - ממשיכים לשלב selfie
             setIsVisible(false);
-              const timer = setTimeout(() => {
-                setIsVisible(true);
-              }, 0); 
-              // return () => clearTimeout(timer);
+            const timer = setTimeout(() => {
+              setIsVisible(true);
+            }, 0);
+            // return () => clearTimeout(timer);
             setCurrentStep("selfie");
           }
         } catch (error) {
-          // אם יש שגיאה באימות, ממשיכים לשלב selfie (משתמש חדש)
-          console.error('User not found, proceeding to selfie registration:', error);
+          console.error(
+            "User not found, proceeding to selfie registration:",
+            error
+          );
           setCurrentStep("selfie");
         }
       } else {
         toast({
-          title: t('toast.error.title'),
-          description: t('auth.otpError'),
+          title: t("toast.error.title"),
+          description: t("auth.otpError"),
           variant: "destructive",
         });
       }
     } catch (error) {
-      console.error('Error in OTP verification:', error);
+      console.error("Error in OTP verification:", error);
       toast({
-        title: t('toast.error.title'),
-        description: t('auth.otpSystemError'),
+        title: t("toast.error.title"),
+        description: t("auth.otpSystemError"),
         variant: "destructive",
       });
     } finally {
@@ -212,128 +236,168 @@ export const AuthFlow = ({ event, onComplete, onCancel, setUsers }: AuthFlowProp
     }
   };
 
+
   const handleSelfieCapture = async (imageData: string) => {
-    setSelfieData(imageData);
     setIsLoading(true);
-    setLoadingMessage(t('auth.processingImage'));
-    
+    setLoadingMessage(t("auth.processingImage"));
+
     try {
-      // יצירת FormData לרישום המשתמש
       const formData = new FormData();
-      
-      // המרת base64 לblob ואז לfile
+
       const response = await fetch(imageData);
       const blob = await response.blob();
-      const originalFile = new File([blob], 'selfie.jpg', { type: 'image/jpeg' });
-      
-      // מזעור התמונה
-      setLoadingMessage(t('auth.resizingImage'));
+      const originalFile = new File([blob], "selfie.jpg", {
+        type: "image/jpeg",
+      });
+
+      setLoadingMessage(t("auth.resizingImage"));
       const compressedBlob = await compressImage(originalFile, 800, 0.7);
-      const compressedFile = new File([compressedBlob], 'selfie_compressed.jpg', { type: 'image/jpeg' });
-      
-      formData.append('image', compressedFile);
-      formData.append('eventid', event.id.toString());
-      formData.append('AuthenticateBy', !event.needDetect ? 'Selfie' : isEmailMode ? 'Email' : 'PhoneNumber');
-      console.log(formData.getAll('AuthenticateBy'))
+      const compressedFile = new File(
+        [compressedBlob],
+        "selfie_compressed.jpg",
+        { type: "image/jpeg" }
+      );
+
+      formData.append("image", compressedFile);
+      formData.append("eventid", event.id.toString());
+      formData.append(
+        "AuthenticateBy",
+        !event.needDetect ? "Selfie" : isEmailMode ? "Email" : "PhoneNumber"
+      );
+
       if (event.needDetect) {
-        setLoadingMessage(t('auth.registeringNewUser'));
-        
-        // משתמש חדש - משתמשים בטלפון/אימייל כid
-        formData.append('id', contactInfo || "selfie-only");
-        formData.append('fullname', 'Anonymous');
-        formData.append('sendNotification', notifications.toString());
-        formData.append('email', isEmailMode ? contactInfo : '');
-        
-        const registrationResponse = await apiService.registerUser(formData);
-        
-        if (registrationResponse && registrationResponse.token) {
-          // שמירת הטוקן
-          sessionStorage.setItem("jwtUser", registrationResponse.token);
-          sessionStorage.setItem("isRegister", "true");
+        setLoadingMessage(t("auth.registeringNewUser"));
+        formData.append("id", contactInfo || "selfie-only");
+        formData.append("fullname", "Anonymous");
+        formData.append("sendNotification", notifications.toString());
+        formData.append("email", isEmailMode ? contactInfo : "");
 
-          // שליחת SMS עם קישור לגלריה (רק לטלפון)
-          if (!isEmailMode && registrationResponse.user?.id) {
-            try {
-              setLoadingMessage(t('auth.sendingGalleryLink'));
-              await apiService.sendWelcomeSMS(contactInfo, event.eventLink, registrationResponse.user.id);
-            } catch (smsError) {
-              console.error('Failed to send welcome SMS:', smsError);
-              toast({
-                title: t('auth.alert'),
-                description: t('auth.smsWarning'),
-                variant: "default",
-              });
-            }
-          }
-          // טעינת נתוני המשתמש (תמונות, משתמשים קשורים)
-          if (registrationResponse.user?.id) {
-            await setUserData(registrationResponse.user);
-          }
-          
-          setCurrentStep("complete");
-          onComplete(registrationResponse.user); 
-
-          toast({
-            title: t('auth.registrationSuccess'),
-            description: isEmailMode ? t('auth.registrationSuccessDesc') : t('auth.registrationSuccessWithSMS'),
-            variant: "default",
-          });
-        } else {
-          throw new Error("Registration failed - no token received");
-        }
       } else {
-        setLoadingMessage(t('auth.registeringUser'));
-        
-        // לאירועים ללא זיהוי פנים
-        const registrationResponse = await apiService.registerUserByPhoto(formData);
-        
-        if (registrationResponse && registrationResponse.token) {
-          sessionStorage.setItem("jwtUser", registrationResponse.token);
-          sessionStorage.setItem("isRegister", "true");
-          sessionStorage.setItem('userid', registrationResponse.user.id.toString());
-
-          // טעינת נתוני המשתמש (תמונות, משתמשים קשורים)
-
-          if (registrationResponse?.user.id) {
-            await setUserData(registrationResponse.user);
-          }
-          
-          setCurrentStep("complete");
-          onComplete(registrationResponse.user); 
-
-          
-          // toast({
-          //   title: t('auth.eventRegistrationSuccess'),
-          //   description: t('auth.eventRegistrationDesc'),
-          //   variant: "default",
-          // });
-        } else {
-          throw new Error("Registration by photo failed");
-        }
+        setLoadingMessage(t("auth.registeringUser"));
       }
+      await detectMultipleFaces(formData);
     } catch (error) {
-      console.error('Registration error:', error);
+      console.error("Registration error:", error);
       toast({
-        title: t('auth.registrationError'),
-        description: t('auth.registrationErrorDesc'),
+        title: t("auth.registrationError"),
+        description: t("auth.registrationErrorDesc"),
         variant: "destructive",
       });
     } finally {
       setIsLoading(false);
       setLoadingMessage("");
     }
+
+  };
+
+  const detectMultipleFaces = async (formData) => {
+    const registrationResponse = event.needDetect ? await apiService.registerUser(formData) : await apiService.registerUserByPhoto(formData);
+    if (registrationResponse.isMultipleFaces) {
+      setDetectedFaces(registrationResponse.faceImageUrls);
+      setSelectedFaces(new Set(registrationResponse.faceImageUrls.map((_, i) => i)));
+      if (registrationResponse.faceImageUrls.length == 1) {
+        await registerSelectedFaces(registrationResponse.faceImageUrls, false);
+        return;
+      }
+      setCurrentStep("selectFaces");
+      return;
+    }
+
+    await eventWithDetectRegister(registrationResponse);
+  }
+
+  const eventWithDetectRegister = async (registrationResponse: any) => {
+    if (registrationResponse && registrationResponse.token) {
+      sessionStorage.setItem("jwtUser", registrationResponse.token);
+      sessionStorage.setItem("isRegister", "true");
+
+      // שליחת SMS עם קישור לגלריה (רק לטלפון)
+      if (!isEmailMode && registrationResponse.user?.id) {
+        try {
+          setLoadingMessage(t("auth.sendingGalleryLink"));
+          await apiService.sendWelcomeSMS(
+            contactInfo,
+            event.eventLink,
+            registrationResponse.user.id
+          );
+        } catch (smsError) {
+          console.error("Failed to send welcome SMS:", smsError);
+          toast({
+            title: t("auth.alert"),
+            description: t("auth.smsWarning"),
+            variant: "default",
+          });
+        }
+      }
+      if (registrationResponse.user?.id) {
+        await setUserData(registrationResponse.user);
+      }
+
+      setCurrentStep("complete");
+      onComplete(registrationResponse.user);
+      onCancel();
+      toast({
+        title: t("auth.registrationSuccess"),
+        description: isEmailMode
+          ? t("auth.registrationSuccessDesc")
+          : t("auth.registrationSuccessWithSMS"),
+        variant: "default",
+      });
+    } else {
+      throw new Error("Registration failed - no token received");
+    }
+  }
+  const registerSelectedFaces = async (faces, faceWithName) => {
+    const payload: RegisterFacesRequest = {
+      reRegister: false,
+      eventId: event.id,
+      contactInfo,
+      authenticateBy: needsFullAuth
+        ? isEmailMode
+          ? "Email"
+          : "PhoneNumber"
+        : "Selfie",
+      faces: faces.map((f) => ({
+        imageUrl: faceWithName ? f.imageUrl : f,
+        name: faceWithName ? f.name : "Anonymous",
+      })),
+    };
+    const result = await apiService.registerSelectedFaces(payload);
+    sessionStorage.setItem("jwtUser", result.token);
+    sessionStorage.setItem("userid", result.user.id.toString());
+    await setUserData(result.user);
+    setCurrentStep("complete");
+    onComplete(result.user);
+    onCancel();
+    return;
+  }
+
+  const goToNamesStep = () => {
+    const facesWithNames: SelectedFace[] = [...selectedFaces].map((index) => ({
+      index,
+      imageUrl: detectedFaces[index],
+      name: "",
+    }));
+
+    setSelectedFaceItems(facesWithNames);
+    setCurrentStep("names");
   };
 
   const stepTitles = {
-    contact: isEmailMode ? t('auth.emailEntry') : t('auth.phoneEntry'),
-    otp: t('auth.otpVerification'),
-    selfie: needsFullAuth ? t('auth.selfieCapture') : t('auth.takeSelfie'),
-    complete: t('auth.registrationComplete')
+    contact: isEmailMode ? t("auth.emailEntry") : t("auth.phoneEntry"),
+    otp: t("auth.otpVerification"),
+    selfie: needsFullAuth ? t("auth.selfieCapture") : t("auth.takeSelfie"),
+    selectFaces: t("auth.selectFaces"),
+    names: t("auth.enterNames"),
+    complete: t("auth.registrationComplete"),
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" dir={language === 'he' ? 'rtl' : 'ltr'}
-    style={{visibility: isVisible ? 'visible' : 'hidden'}}>
+    <div
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      dir={language === "he" ? "rtl" : "ltr"}
+      style={{ visibility: isVisible ? "visible" : "hidden" }}
+    >
       <div className="bg-background border border-border rounded-lg shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="p-6 border-b border-border">
@@ -341,34 +405,26 @@ export const AuthFlow = ({ event, onComplete, onCancel, setUsers }: AuthFlowProp
             <h2 className="text-xl font-semibold text-foreground">
               {stepTitles[currentStep]}
             </h2>
-            <button 
+            <button
               onClick={onCancel}
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
               ✕
             </button>
           </div>
-          
+
           {/* Progress indicator */}
-          {needsFullAuth &&(
-          <div className="mt-4 flex gap-2" >
-            {(needsFullAuth ? ["contact", "otp", "selfie"] : ["selfie"]).map((step, index) => (
-              <div
+          {needsFullAuth && (
+            <div className="mt-2 flex gap-2">
+              {STEPS.map((step, index) => (
+                <div
                   key={step}
-                  className={`h-2 flex-1 rounded-full transition-colors ${
-                    step === currentStep || 
-                    (currentStep === "complete" && index < (needsFullAuth ? 3 : 1))
-                    ? "bg-primary" 
-                    : currentStep === "otp" && step === "contact"
-                    ? "bg-primary"
-                    : currentStep === "selfie" && (step === "contact" || step === "otp")
-                    ? "bg-primary"
-                    : "bg-muted"
+                  className={`h-2 flex-1 rounded-full transition-colors ${currentStepIndex === -1 || index <= currentStepIndex ? "bg-primary" : "bg-muted"
                     }`}
-                    />
-                  ))}
-              </div>
-            )}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Content */}
@@ -376,7 +432,10 @@ export const AuthFlow = ({ event, onComplete, onCancel, setUsers }: AuthFlowProp
           {/* Loading indicator */}
           {isLoading && (
             <div className="flex items-center justify-center py-8">
-              <div className={`flex items-center gap-3 ${language === 'he' ? 'flex-row-reverse' : 'flex-row'}`}>
+              <div
+                className={`flex items-center gap-3 ${language === "he" ? "flex-row-reverse" : "flex-row"
+                  }`}
+              >
                 <p className="text-muted-foreground text-sm">
                   {loadingMessage}
                 </p>
@@ -384,35 +443,75 @@ export const AuthFlow = ({ event, onComplete, onCancel, setUsers }: AuthFlowProp
               </div>
             </div>
           )}
-          
-          {!isLoading && needsFullAuth && currentStep === "contact" && (
-            isEmailMode ? (
-              <EmailInput 
-                onSubmit={handleContactSubmit}
-                onBack={onCancel}
-              />
+
+          {!isLoading &&
+            needsFullAuth &&
+            currentStep === "contact" &&
+            (isEmailMode ? (
+              <EmailInput onSubmit={handleContactSubmit} onBack={onCancel} />
             ) : (
-              <PhoneCountryInput 
+              <PhoneCountryInput
                 onSubmit={handleContactSubmit}
                 onBack={onCancel}
               />
-            )
-          )}
-          
+            ))}
+
           {!isLoading && needsFullAuth && currentStep === "otp" && (
-            <OTPVerification 
+            <OTPVerification
               phoneNumber={contactInfo}
               onSubmit={handleOTPSubmit}
               onBack={() => setCurrentStep("contact")}
               isEmailMode={isEmailMode}
             />
           )}
-          
+
           {!isLoading && currentStep === "selfie" && (
-            <SelfieCapture 
+            <SelfieCapture
               onCapture={handleSelfieCapture}
-              onBack={needsFullAuth ? () => setCurrentStep("otp") : onCancel}
-              autoOpenCamera = {true}
+              onBack={needsFullAuth ? () => setCurrentStep("contact") : onCancel}
+              autoOpenCamera={true}
+              withBTAction={true}
+            />
+          )}
+          {!isLoading && currentStep === "selectFaces" && (
+            <FaceSelectionGrid
+              faces={detectedFaces}
+              selected={selectedFaces}
+              onBack={() => {
+                const returnToStep = selectedFaceItems.length > 1 ? "selectFaces" : "selfie";
+                setCurrentStep(returnToStep);
+              }}
+              onToggle={(index) => {
+                const copy = new Set(selectedFaces);
+                copy.has(index) ? copy.delete(index) : copy.add(index);
+                setSelectedFaces(copy);
+              }}
+              onContinue={goToNamesStep}
+            />
+          )}
+          {currentStep === "names" && (
+            <FaceNamesForm
+              faces={selectedFaceItems}
+              isLoading={isLoading}
+              onBack={() => setCurrentStep("selectFaces")}
+              onSubmit={async (faces) => {
+                try {
+                  setIsLoading(true);
+                  setLoadingMessage(
+                    language === "he" ? "יוצר משתמשים..." : "Creating users..."
+                  );
+                  await registerSelectedFaces(faces, true);
+                } catch (e) {
+                  toast({
+                    title: "שגיאה",
+                    description: "לא הצלחנו לרשום את המשתמשים",
+                    variant: "destructive",
+                  });
+                } finally {
+                  setIsLoading(false);
+                  setLoadingMessage("");
+                }
+              }}
             />
           )}
         </div>

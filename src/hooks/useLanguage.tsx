@@ -17,7 +17,8 @@ const translations = {
     'hero.subtitle': 'כל הזכרונות הקסומים מהיום הכי מיוחד שלכם',
     'hero.allPhotos': 'כל התמונות',
     'hero.myPhotos': 'התמונות שלי',
-    
+    'hero.showGallery': 'הצג גלריה',
+
     // Gallery Header - כותרת גלריה
     'gallery.title': 'גלריית תמונות',
     'gallery.totalImages': 'סך התמונות',
@@ -131,7 +132,10 @@ const translations = {
     'auth.eventRegistrationDesc': 'נרשמת בהצלחה לאירוע!',
     'auth.registrationError': 'שגיאה ברישום',
     'auth.registrationErrorDesc': 'אירעה שגיאה ברישום. אנא נסה שוב.',
-    
+    'auth.enterName': 'הזן שם',
+    'auth.nameInstruction': 'אנא הזן את שם הילד שבמחנה',
+    'auth.selectFaces': 'בחר פרצופים',
+    'auth.enterNames': 'הזן שמות',
     // Download Modal - מודל הורדה
     'downloadModal.contactRequired': 'אנא הזינו טלפון או מייל',
     'downloadModal.downloadComplete': 'הורדה הושלמה!',
@@ -170,6 +174,7 @@ const translations = {
     'auth.otpVerification': 'אימות קוד',
     'auth.selfieCapture': 'צילום סלפי',
     'auth.registrationComplete': 'הרשמה הושלמה',
+    'auth.phoneInstructionKimama': 'מספר הטלפון שאליו תרצו שנשלח את תמונות ילדכם',
     'auth.phoneInstruction': 'נשלח לך קוד אימות בהודעת SMS',
     'auth.emailInstruction': 'נשלח לך קוד אימות למייל',
     'auth.phoneExample': 'המספר יוזן ללא הקידומת 0. לדוגמה: 50-123-4567',
@@ -183,12 +188,15 @@ const translations = {
     'auth.verifying': 'מאמת...',
     'auth.continue': 'המשך',
     'auth.selfieInstruction': 'צלם סלפי כדי לאתר את התמונות שלך ',
+    'auth.selfieInstructionAddUser': 'העלה סלפי של המשתמש החדש ',
     'auth.takeSelfie': 'צלם סלפי',
     'auth.selectFile': 'בחר קובץ',
+    'auth.selectFileAddUser': 'בחר תמונה',
     'auth.camera': 'מצלמה',
     'auth.loading': 'טוען עוד תמונות...',
     'auth.takePhoto': 'צלם',
     'auth.confirm': 'אישור',
+    'auth.createUser': 'צור משתמש',
     'auth.retake': 'חזור',
     'auth.cameraError': 'שגיאה בגישה למצלמה. אנא וודא שהמצלמה מחוברת ונתת הרשאה.',
     'auth.invalidPhone': 'מספר הטלפון לא תקין עבור המדינה שנבחרה',
@@ -251,7 +259,7 @@ const translations = {
 
     // Notifications - התראות
     'notifications.title': 'התראות על תמונות חדשות',
-    'notifications.subtitle': 'קבל התראה כשמתווספות תמונות',
+    'notifications.subtitle': 'נעדכן אותך כשיש לך תמונות חדשות',
     'notifications.subscribe': 'הרשמה',
     'notifications.getUpdates': 'קבלת עדכונים',
     'notifications.subscribeTo': 'הרשמה להתראות',
@@ -267,6 +275,9 @@ const translations = {
     'notifications.optional': '(אופציונלי)',
     'notifications.enableNotifications': 'אפשר התראות',
     'notifications.close': 'סגור',
+    'notifications.off': 'כבה התראות',
+    'notifications.register': 'הרשמה להתראות',
+    'notifications.on': 'הפעל התראות',
 
     // Gallery - גלריה
     'gallery.language': 'שפה',
@@ -296,7 +307,18 @@ const translations = {
     'users.email': 'מייל',
     'users.namePlaceholder': 'הזן שם',
     'users.phonePlaceholder': 'הזן מספר טלפון',
-    'users.emailPlaceholder': 'הזן כתובת מייל'
+    'users.emailPlaceholder': 'הזן כתובת מייל',
+
+    'welcomeBack': 'ברוכים השבים!',
+'viewGallery': 'צפה בגלריה', 
+'browsePhotos': 'עיין בתמונות שלך',
+'changeSelfie': 'שנה סלפי',
+'updatePhoto': 'עדכן את התמונה שלך',
+'photosAvailableAfterEvent': 'התמונות יהיו זמינות לאחר האירוע',
+'swipeToDismiss': 'גרור למטה לסגירה',
+'myPhotos': 'התמונות שלי',
+'myPhotosDesc': 'תמונות שנצלחת',
+
   },
   en: {
     // Hero Section
@@ -304,7 +326,8 @@ const translations = {
     'hero.subtitle': 'All the magical memories from your most special day',
     'hero.allPhotos': 'All Photos',
     'hero.myPhotos': 'My Photos',
-    
+    'hero.showGallery': 'View Gallery',
+
     // Gallery Header
     'gallery.title': 'Photo Gallery',
     'gallery.totalImages': 'Total Images',
@@ -401,7 +424,12 @@ const translations = {
     'auth.eventRegistrationDesc': 'Successfully registered for the event!',
     'auth.registrationError': 'Registration Error',
     'auth.registrationErrorDesc': 'An error occurred during registration. Please try again.',
-    
+    'auth.selectFileAddUser': 'Select Photo',
+    'auth.selfieInstructionAddUser': 'Upload a selfie of the new user',
+    'auth.enterName': 'Enter Name',
+    'auth.nameInstruction': 'Enter your child\'s name',
+    'auth.selectFaces': 'Select Faces',
+    'auth.enterNames': 'Enter Names',
     // Download Modal
     'downloadModal.contactRequired': 'Please enter phone or email',
     'downloadModal.downloadComplete': 'Download Complete!',
@@ -441,9 +469,10 @@ const translations = {
     'auth.selfieCapture': 'Selfie Capture',
     'auth.registrationComplete': 'Registration Complete',
     'auth.phoneInstruction': 'We will send you a verification code via SMS',
+    'auth.phoneInstructionKimama': 'Phone number to which you would like us to send your child’s photos',
     'auth.emailInstruction': 'We will send you a verification code via email',
     'auth.phoneExample': 'Enter number without leading 0. Example: 50-123-4567',
-    'auth.enterPhone': 'Enter phone number',
+    'auth.enterPhone': 'Enter Your Phone',
     'auth.enterEmail': 'Enter email address',
     'auth.orUsePhone': 'or use phone',
     'auth.orUseEmail': 'or use email',
@@ -459,6 +488,7 @@ const translations = {
     'auth.loading': 'Loading more images...',
     'auth.takePhoto': 'Take Photo',
     'auth.confirm': 'Confirm',
+    'auth.createUser': 'Create User',
     'auth.retake': 'Retake',
     'auth.cameraError': 'Error accessing camera. Please ensure camera is connected and permission is granted.',
     'auth.invalidPhone': 'Phone number is invalid for the selected country',
@@ -551,6 +581,9 @@ const translations = {
     'notifications.optional': '(Optional)',
     'notifications.enableNotifications': 'Enable notifications',
     'notifications.close': 'Close',
+    'notifications.off': 'Turn off notifications',
+    'notifications.register': 'Register for notifications',
+    'notifications.on': 'Turn on notifications',
 
     // Gallery
     'gallery.language': 'Language',
@@ -580,7 +613,22 @@ const translations = {
     'users.email': 'Email',
     'users.namePlaceholder': 'Enter name',
     'users.phonePlaceholder': 'Enter phone number',
-    'users.emailPlaceholder': 'Enter email address'
+    'users.emailPlaceholder': 'Enter email address',
+
+
+// להוסיף ל-translations.en:
+'welcomeBack': 'Welcome Back!',
+'viewGallery': 'View Gallery',
+'browsePhotos': 'Browse your photos',
+'changeSelfie': 'Change Selfie',
+'updatePhoto': 'Update your photo',
+'photosAvailableAfterEvent': 'Your photos will be available after the event',
+'swipeToDismiss': 'Swipe down to dismiss',
+'myPhotos': 'My Photos',
+'myPhotosDesc': 'Photos you took',
+
+
+    
   }
 };
 

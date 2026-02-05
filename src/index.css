@@ -278,6 +278,14 @@ All colors MUST be HSL.
     transform: translateY(10px) scale(0.9);
   }
 }
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE */
+  scrollbar-width: none; /* Firefox */
+}
 
 /* מחלקות delay מותאמות לשימוש בכפתורים */
 .fade-in-delay-1 {
