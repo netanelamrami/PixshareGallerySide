@@ -190,6 +190,7 @@ export const WeddingHero = ({ event, onViewAllPhotos, onViewMyPhotos, isLoadingA
 
         {/* Buttons */}
         <div className="flex flex-row sm:flex-row gap-4 w-full max-w-md mx-auto justify-center">
+          {event?.hasFaceRecognition && (
           <Button
             onClick={handleMyPhotosClick}
             variant="outline"
@@ -223,9 +224,10 @@ export const WeddingHero = ({ event, onViewAllPhotos, onViewMyPhotos, isLoadingA
               </>
             )}
           </Button>
+          )}
 
           {/* Show All Photos button only if withPhotos is true */}
-          {(event?.withPhotos || showAllPhotosBt) && (
+          {(event?.withPhotos || showAllPhotosBt || !event?.hasFaceRecognition) && (
             <Button
               onClick={handleAllPhotosClick}
               size="lg"

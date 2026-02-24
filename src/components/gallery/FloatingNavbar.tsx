@@ -171,7 +171,7 @@ export const FloatingNavbar = ({ event, galleryType, onToggleGalleryType, onDown
             )}
 
         {/* Gallery Toggle */}
-          {event.withPhotos && (
+          {event.withPhotos && event.hasFaceRecognition && (
               <Button
               variant="outline"
               size="sm"
@@ -181,7 +181,9 @@ export const FloatingNavbar = ({ event, galleryType, onToggleGalleryType, onDown
               {galleryType === 'all' ? <Users className="h-4 w-4" /> : <Images className="h-4 w-4" />}
 
                 <span>
-                  {galleryType === 'all' && isConnect ? t('navbar.myPhotos') : galleryType === 'all' && !isConnect ? t('navbar.findMe') :t ('navbar.allPhotos')}
+                  {galleryType === 'all' && isConnect ? t('navbar.myPhotos') :
+                   galleryType === 'all' && !isConnect ? t('navbar.findMe') :
+                   t ('navbar.allPhotos')}
                 </span>
               </Button>
             )}

@@ -630,7 +630,7 @@ useEffect(() => {
                   try {
                     const photoUrl = currentImage.mediumSrc;
                     const encodedPhotoUrl = btoa(photoUrl);
-                    const url = `https://plugos888.com/profile?eventid=68f1211cb0eacc6dff325195&photoUrl=${encodeURIComponent(
+                    const url = `https://plugos888.com/profile?pixshareId=${event.eventLink}&photoUrl=${encodeURIComponent(
                       encodedPhotoUrl
                     )}`;
                     window.open(url, "_blank");

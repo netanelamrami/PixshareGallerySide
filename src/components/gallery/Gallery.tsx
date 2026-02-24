@@ -207,24 +207,35 @@ export const Gallery = ({
   }, [displayedImagesCount, isLoadingMore, images]);
 
   // Responsive columns based on screen size
-  useEffect(() => {
-    const updateColumns = () => {
-      const width = window.innerWidth;
-      if (width < 640) {
-        setColumns(2);
-      } else if (width < 768) {
-        setColumns(3);
-      } else if (width < 1024) {
-        setColumns(4);
-      } else {
-        setColumns(5);
-      }
-    };
+useEffect(() => {
+  const updateColumns = () => {
+    const size = event.galleryGridSize; // 1, 2, 3
+    const width = window.innerWidth;
+    let columns;
 
-    updateColumns();
-    window.addEventListener("resize", updateColumns);
-    return () => window.removeEventListener("resize", updateColumns);
-  }, []);
+    if (width < 640) {
+      columns = 2;
+    } else if (width < 768) {
+      columns = 3;
+    } else if (width < 1024) {
+      columns = 4;
+    } else {
+      columns = 5;
+    }
+
+    if (size === 1) columns -= 1;
+    else if (size === 3) columns += 1;
+
+    if (columns < 1) columns = 1;
+
+    setColumns(columns);
+  };
+
+  updateColumns();
+  window.addEventListener("resize", updateColumns);
+  return () => window.removeEventListener("resize", updateColumns);
+}, [event.galleryGridSize]);
+
 
   // Reset displayed images when album changes
   useEffect(() => {

@@ -49,6 +49,7 @@ export interface event {
   eventLanguage: "HE" | "EN";
   galleryGridSize: number;
   eventPhotoLockType?: string;
+  hasFaceRecognition: boolean;
 }
 
 

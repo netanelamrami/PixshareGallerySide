@@ -12,11 +12,12 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useIsMobile } from '@/hooks/use-mobile';
 import { FAQSupportDialog } from '../gallery/FAQSupportDialog';
 import { faqData } from '@/data/faqData';
+import { event } from '@/types/event';
 
 interface UserAvatarStackProps {
   totalImages: number;
   onDownloadAll: () => void;
-  event?: any;
+  event?: event;
   onAuthComplete?: (userData: { contact: string; otp: string; selfieData: string; notifications: boolean }) => void;
   className?: string;
   onViewMyPhotos: () => void;
@@ -64,6 +65,7 @@ export const UserAvatarStack = ({ totalImages, onDownloadAll, event, onAuthCompl
     return (
       <>
         <div className={cn("relative", className)}>
+          {(event?.hasFaceRecognition || isMobile) && (
           <Popover open={isOpen} onOpenChange={setIsOpen} >
             <PopoverTrigger asChild >
               <Button
@@ -71,10 +73,15 @@ export const UserAvatarStack = ({ totalImages, onDownloadAll, event, onAuthCompl
                 size="sm"
                 className="relative h-8 w-8 rounded-full border-2 border-border hover:border-primary/50 transition-all duration-200"
               >
-                <UserCircle className="h-5 w-5" />
+                {event?.hasFaceRecognition ? (
+                  <UserCircle className="h-5 w-5" />
+                 ) : (
+                <MoreVertical className="h-4 w-4" />
+     
+              )}
               </Button>
             </PopoverTrigger>
-            <PopoverContent align="end" className="w-48 p-2" dir={language === 'he' ? 'rtl' : 'ltr'}>
+                        <PopoverContent align="end" className="w-48 p-2" dir={language === 'he' ? 'rtl' : 'ltr'}>
 
               {isMobile && totalImages > 0 && totalImages < 600 && (
                 <>
@@ -117,19 +124,23 @@ export const UserAvatarStack = ({ totalImages, onDownloadAll, event, onAuthCompl
                   <span>{language === 'he' ? 'תמיכה' : 'Support'}</span>
                 </Button>
               )}
-              <Button
+              {(event?.hasFaceRecognition) && (
+                <Button
                 variant="ghost"
+                
                 className="w-full h-auto p-2 justify-start hover:bg-muted/50"
                 onClick={() => {
                   onViewMyPhotos();
                   setIsOpen(false);
                 }}
-              >
+                >
                 <UserCircle className="w-4 h-4 mr-2" />
                 {language === 'he' ? 'מצא אותי' : 'Find me'}
               </Button>
+              )}
             </PopoverContent>
           </Popover>
+              )}
         </div>
 
         <FAQSupportDialog
