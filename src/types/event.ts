@@ -50,6 +50,7 @@ export interface event {
   galleryGridSize: number;
   eventPhotoLockType?: string;
   hasFaceRecognition: boolean;
+  externalLink?: string;
 }
 
 

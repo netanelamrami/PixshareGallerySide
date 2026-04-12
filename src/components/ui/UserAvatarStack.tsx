@@ -83,7 +83,8 @@ export const UserAvatarStack = ({ totalImages, onDownloadAll, event, onAuthCompl
             </PopoverTrigger>
                         <PopoverContent align="end" className="w-48 p-2" dir={language === 'he' ? 'rtl' : 'ltr'}>
 
-              {isMobile && totalImages > 0 && totalImages < 600 && (
+{/* totalImages < 600 &&  */}
+              {isMobile && totalImages > 0 && ( 
                 <>
                   <Button
                     variant="ghost"

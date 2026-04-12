@@ -48,3 +48,17 @@
   -ms-overflow-style: none; /* IE */
   scrollbar-width: none; /* Firefox */
 }
+.animate-slide-up {
+  animation: slideUp 0.25s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

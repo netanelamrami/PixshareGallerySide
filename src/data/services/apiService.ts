@@ -1,8 +1,8 @@
 import { RegisterFacesRequest, User } from "@/types/auth";
 import { statistic } from "@/types/event";
 
- const BASE_URL = "https://api.pixshare.live/PixApi/api";
-// const BASE_URL = "http://localhost:5050/api";
+//const BASE_URL = "https://api.pixshare.live/PixApi/api";
+const BASE_URL = "http://localhost:5050/api";
  //const BASE_URL = "https://api.pixshare.live/PixshareTest/api";
 
 export const apiService = {

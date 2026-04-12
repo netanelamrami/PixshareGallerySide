@@ -561,6 +561,7 @@ const Index = ({ isKimama = false }: IndexProps) => {
         <div id="gallery">
           <Gallery
             event={event}
+            isKimama={isKimama}
             images={filteredImages}
             favoriteImages={favoriteImages}
             onToggleFavorite={handleToggleFavorite}
@@ -611,6 +612,7 @@ const Index = ({ isKimama = false }: IndexProps) => {
           event={event}
           onSubscribe={handleNotificationSubscribe}
           onClose={() => setShowNotificationSubscription(false)}
+          isKimama={isKimama}
           initialStep={initialStepNotification}
         />
       )}
@@ -621,6 +623,7 @@ const Index = ({ isKimama = false }: IndexProps) => {
         onClose={() => setShowDownloadModal(false)}
         imageCount={galleryImages.length}
         images={galleryImages}
+        isKimama={isKimama}
         autoDownload={galleryImages.length <= 20}
         albumName={event?.name || "כל התמונות"}
         galleryType={galleryType}

@@ -142,7 +142,7 @@ useEffect(() => {
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose, onNext, onPrevious, isZoomed]);
-
+const isVideo = currentImage?.largeSrc?.match(/\.(mp4|webm|mov|m4v)$/i);
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -316,8 +316,8 @@ useEffect(() => {
     apiService.updateStatistic(event.id, "SharePhotoClick");
     setLinkedinShareIsLoading(true);
     const result = await shareImage(
-      currentImage.largeSrc,
-      `${currentImage.id}`,
+      currentImage?.largeSrc,
+      `${currentImage?.id}`,
       text
     );
     setLinkedinShareIsLoading(false);
@@ -510,7 +510,32 @@ useEffect(() => {
                 <div className="animate-spin w-8 h-8 border-2 border-foreground border-t-transparent rounded-full"></div>
               </div>
             )}
-            <img
+            {isVideo ? (
+  <video
+    src={currentImage?.largeSrc}
+    controls
+    autoPlay
+    className={cn(
+      "max-w-full w-auto h-auto object-contain max-h-[calc(100vh-12vh)]",
+      imageLoaded ? "opacity-100" : "opacity-0"
+    )}
+    onLoadedData={() => setImageLoaded(true)}
+  />
+) : (
+  <img
+    src={currentImage.mediumSrc}
+    alt={currentImage.alt}
+    ref={imgRef}
+    className={cn(
+      "max-w-full w-auto h-auto object-contain transition-opacity duration-300 max-h-[calc(100vh-12vh)]",
+      imageLoaded ? "opacity-100" : "opacity-0"
+    )}
+    onLoad={() => setImageLoaded(true)}
+    draggable={false}
+  />
+)}
+
+            {/* <img
               src={currentImage.mediumSrc}
               alt={currentImage.alt}
                 ref={imgRef}
@@ -521,7 +546,7 @@ useEffect(() => {
               )}
               onLoad={() => setImageLoaded(true)}
               draggable={false}
-            />
+            /> */}
           </motion.div>
         </AnimatePresence>
       </div>

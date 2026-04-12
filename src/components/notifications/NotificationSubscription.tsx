@@ -22,9 +22,10 @@ interface NotificationSubscriptionProps {
   onSubscribe: () => void;
   onClose: () => void;
   initialStep?: NotificationStep;
+  isKimama?: boolean;
 }
 
-export const NotificationSubscription = ({ event, onSubscribe, onClose, initialStep = "collapsed"}: NotificationSubscriptionProps) => {
+export const NotificationSubscription = ({ event, onSubscribe, onClose, isKimama, initialStep = "collapsed" }: NotificationSubscriptionProps) => {
   const [currentStep, setCurrentStep] = useState<NotificationStep>(initialStep);
   const { t, language } = useLanguage();
   const [contactInfo, setContactInfo] = useState("");
@@ -42,32 +43,32 @@ export const NotificationSubscription = ({ event, onSubscribe, onClose, initialS
   });
   // setIsEmailMode(event?.registerBy === "Email");
 
-useEffect(() => {
-  setCurrentStep(initialStep);
+  useEffect(() => {
+    setCurrentStep(initialStep);
 
-  if (currentUser.email !== 'Anonymous') {
-    setFormData(prev => ({
-      ...prev,
-      email: currentUser.email || ""
-    }));
-  }
+    if (currentUser.email !== 'Anonymous') {
+      setFormData(prev => ({
+        ...prev,
+        email: currentUser.email || ""
+      }));
+    }
 
-  const country = countries.find(c =>
-    currentUser.phoneNumber?.startsWith(c.code)
-  );
+    const country = countries.find(c =>
+      currentUser.phoneNumber?.startsWith(c.code)
+    );
 
-  const phone = country
-    ? currentUser.phoneNumber.replace(country.code, "")
-    : currentUser.phoneNumber || "";
+    const phone = country
+      ? currentUser.phoneNumber.replace(country.code, "")
+      : currentUser.phoneNumber || "";
 
 
-  if (country && !validatePhoneNumber(phone, country.toString())) {
-    setFormData(prev => ({
-      ...prev,
-      phone: phone
-    }));
-  }
-}, []);
+    if (country && !validatePhoneNumber(phone, country.toString())) {
+      setFormData(prev => ({
+        ...prev,
+        phone: phone
+      }));
+    }
+  }, []);
 
 
 
@@ -76,12 +77,11 @@ useEffect(() => {
     if (currentStep === "collapsed") {
       const timer = setTimeout(() => {
         setCurrentStep("hidden");
-          onClose();
-      }, 8000); 
+        onClose();
+      }, 8000);
 
       return () => clearTimeout(timer);
     }
-    console.log("currentStep changed to:", currentStep);
   }, [currentStep]);
   const handleContactSubmit = async (contact: string, notificationPreference: boolean) => {
     setContactInfo(contact);
@@ -105,7 +105,7 @@ useEffect(() => {
           variant: "default",
         });
       }
-      
+
       setCurrentStep("otp");
     } catch (error) {
       console.error('Error sending OTP:', error);
@@ -119,8 +119,8 @@ useEffect(() => {
       setLoadingMessage("");
     }
   };
-  const handleOTPSubmit = async(otp: string) => {
-    const isVerified = await apiService.verifyOTP(contactInfo,otp)
+  const handleOTPSubmit = async (otp: string) => {
+    const isVerified = await apiService.verifyOTP(contactInfo, otp)
     if (!isVerified) {
       toast({
         title: t('auth.sendError'),
@@ -132,41 +132,41 @@ useEffect(() => {
     setCurrentStep("hidden");
 
     //change notification preference
-const content = isEmailMode 
-  ? formData.email 
-  : `${formData.countryCode}${formData.phone.startsWith('05') ? formData.phone.substring(1) : formData.phone}`;
-  setSendNotification(currentUser.id, true, content, isEmailMode);
-    if(isEmailMode){
-      await apiService.sendWelcomeEmail(content,event.eventLink, currentUser.id)
-    }else{
-      await apiService.sendWelcomeSMS(content,event.eventLink , currentUser.id.toString())
+    const content = isEmailMode
+      ? formData.email
+      : `${formData.countryCode}${formData.phone.startsWith('05') ? formData.phone.substring(1) : formData.phone}`;
+    setSendNotification(currentUser.id, true, content, isEmailMode);
+    if (isEmailMode) {
+      await apiService.sendWelcomeEmail(content, event.eventLink, currentUser.id)
+    } else {
+      await apiService.sendWelcomeSMS(content, event.eventLink, currentUser.id.toString())
     }
     toast({
-        title: t('notifications.notificationsEnabled'),
-        description: t('notifications.subscribeSuccess'),
-      });
+      title: t('notifications.notificationsEnabled'),
+      description: t('notifications.subscribeSuccess'),
+    });
     // setCurrentStep("hidden");
-    onSubscribe(); 
+    onSubscribe();
     setTimeout(() => {
-      }, 20000);
+    }, 20000);
   };
 
   const turnOffNotification = () => {
-      localStorage.setItem('notificationSubscription', 'false');
-      setSendNotification(currentUser.id, false,'',true);
-      toast({
-        title: t('notifications.notificationsDisabled'),
-        description: t('notifications.notificationsDisabled'),
-      });
+    localStorage.setItem('notificationSubscription', 'false');
+    setSendNotification(currentUser.id, false, '', true);
+    toast({
+      title: t('notifications.notificationsDisabled'),
+      description: t('notifications.notificationsDisabled'),
+    });
   };
 
-const validatePhoneNumber = (number: string, countryCode: string): boolean => {
+  const validatePhoneNumber = (number: string, countryCode: string): boolean => {
     const selectedCountry = countries.find(country => country.code === countryCode);
     if (!selectedCountry) return false;
-    
+
     // Remove leading zero and any spaces/dashes
     const cleanNumber = number.replace(/^0/, '').replace(/[\s-]/g, '');
-    
+
     return selectedCountry.pattern.test(cleanNumber);
   };
 
@@ -187,36 +187,36 @@ const validatePhoneNumber = (number: string, countryCode: string): boolean => {
   if (currentStep === "collapsed") {
     return (
 
-        <div className="fixed top-14 left-0 right-0 z-[60] mx-2   sm:right-0 sm:left-auto sm:transform-none sm:max-w-md animate-fade-in min-w-[350px]">  
-          <div className="bg-card/95 backdrop-blur-sm border border-accent/50 text-card-foreground rounded-lg shadow-lg p-3 w-full sm:max-w-md">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Bell className="w-4 h-4 text-blue-500" />
-                <div>
-                  <h3 className="font-medium text-sm">
-                    {language === 'he' ? 'התראות על תמונות חדשות' : 'New Photo Notifications'}
-                  </h3>
-                  <p className="text-xs text-muted-foreground">
-                    {language === 'he' ? 'קבל התראה כשמעלים תמונות חדשות' : 'Get notified when new photos are uploaded'}
-                  </p>
-                </div>
+      <div className="fixed top-14 left-0 right-0 z-[60] mx-2   sm:right-0 sm:left-auto sm:transform-none sm:max-w-md animate-fade-in min-w-[350px]">
+        <div className="bg-card/95 backdrop-blur-sm border border-accent/50 text-card-foreground rounded-lg shadow-lg p-3 w-full sm:max-w-md">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Bell className="w-4 h-4 text-blue-500" />
+              <div>
+                <h3 className="font-medium text-sm">
+                  {language === 'he' ? 'התראות על תמונות חדשות' : 'New Photo Notifications'}
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  {language === 'he' ? 'קבל התראה כשמעלים תמונות חדשות' : 'Get notified when new photos are uploaded'}
+                </p>
               </div>
-              <div className="flex gap-1">
-                <Button
-                  size="sm"
-                  onClick={() => setCurrentStep("on")}
-                  className="h-7 px-2 text-xs"
-                >
-                  {language === 'he' ? 'הירשם' : 'Subscribe'}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() =>{ setCurrentStep("hidden"); onClose()}}
-                  className="h-7 w-7 p-0"
-                >
-                  <X className="w-3 h-3" />
-                </Button>
+            </div>
+            <div className="flex gap-1">
+              <Button
+                size="sm"
+                onClick={() => setCurrentStep("on")}
+                className="h-7 px-2 text-xs"
+              >
+                {language === 'he' ? 'הירשם' : 'Subscribe'}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => { setCurrentStep("hidden"); onClose() }}
+                className="h-7 w-7 p-0"
+              >
+                <X className="w-3 h-3" />
+              </Button>
             </div>
           </div>
         </div>
@@ -238,26 +238,25 @@ const validatePhoneNumber = (number: string, countryCode: string): boolean => {
                 {stepTitles[currentStep]}
               </h2>
             </div>
-            <button 
-              onClick={() => {setCurrentStep("collapsed"); onClose();}}
+            <button
+              onClick={() => { setCurrentStep("collapsed"); onClose(); }}
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
-          
+
           {/* Progress indicator */}
-          {currentStep !== "on"  && currentStep !== "off" && (
+          {currentStep !== "on" && currentStep !== "off" && (
             <div className="mt-4 flex gap-2">
               {["contact", "otp"].map((step, index) => (
                 <div
                   key={step}
-                  className={`h-2 flex-1 rounded-full transition-colors ${
-                    step === currentStep || 
-                    (currentStep === "otp" && step === "contact")
-                      ? "bg-primary" 
+                  className={`h-2 flex-1 rounded-full transition-colors ${step === currentStep ||
+                      (currentStep === "otp" && step === "contact")
+                      ? "bg-primary"
                       : "bg-muted"
-                  }`}
+                    }`}
                 />
               ))}
             </div>
@@ -265,9 +264,9 @@ const validatePhoneNumber = (number: string, countryCode: string): boolean => {
         </div>
 
 
-          {/* Content */}
+        {/* Content */}
         <div className="p-6">
-           {/* Loading indicator */}
+          {/* Loading indicator */}
           {isLoading && (
             <div className="flex items-center justify-center py-8">
               <div className={`flex items-center gap-3 ${language === 'he' ? 'flex-row-reverse' : 'flex-row'}`}>
@@ -286,111 +285,114 @@ const validatePhoneNumber = (number: string, countryCode: string): boolean => {
                 </p>
               </div>
 
-               {isEmailMode ? (
+              {isEmailMode ? (
                 <div className="space-y-2">
-                   <Label htmlFor="email" className="flex items-center gap-2">
-                     <Mail className="h-4 w-4" />
-                     {t('notifications.enterEmail')}
-                   </Label>
-                    <div className="relative">
-                      <Input
-                        type="email"
-                        placeholder="name@example.com"
-                        value={formData.email}
-                        onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                        className="w-full pr-10 pr-4 py-3  border border-gray-300 
+                  <Label htmlFor="email" className="flex items-center gap-2">
+                    <Mail className="h-4 w-4" />
+                    {t('notifications.enterEmail')}
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      type="email"
+                      placeholder="name@example.com"
+                      value={formData.email}
+                      onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                      className="w-full pr-10 pr-4 py-3  border border-gray-300 
                                   bg-gray-50 placeholder-gray-400 text-sm"
-                        required
-                        dir="ltr"
-                      />
-                      {/* <Mail className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" /> */}
+                      required
+                      dir="ltr"
+                    />
+                    {/* <Mail className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" /> */}
 
-                   </div>
-                       <div className="mt-3 text-center text-sm text-muted-foreground">
-                    <button
-                      onClick={() => setIsEmailMode(false)}
-                      className="text-primary hover:underline"
-                    >
-                      {t('auth.orUsePhone')} {/* למשל "או הירשם באמצעות טלפון" */}
-                    </button>
+
                   </div>
-                 </div>
-                ) : (
-
-                 <div className="space-y-2">
-                   <Label htmlFor="phone" className="flex items-center gap-2">
-                     <Phone className="h-4 w-4" />
-                     {t('notifications.enterPhone')}
-                   </Label>
-                   <div className="flex gap-2" dir="ltr">
-                     <Select value={formData.countryCode} onValueChange={(value) => setFormData(prev => ({ ...prev, countryCode: value }))}>
-                       <SelectTrigger className="w-32">
-                         <SelectValue />
-                       </SelectTrigger>
-                       <SelectContent>
-                         {countries.map((country) => (
-                           <SelectItem key={country.code} value={country.code}>
-                             <div className="flex items-center gap-2">
-                               <span>{country.flag}</span>
-                               <span>{country.code}</span>
-                               <span className="text-sm text-muted-foreground">
-                                 {country.name[language as keyof typeof country.name]}
-                               </span>
-                             </div>
-                           </SelectItem>
-                         ))}
-                       </SelectContent>
-                     </Select>
-                     
-                     <Input
-                       id="phone"
-                       type="tel"
-                       value={formData.phone}
-                       onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                       placeholder={t('auth.enterPhone')}
-                       className="flex-1"
-                       dir="ltr"
-                     />
-                   </div>
+                  {!isKimama && (
                     <div className="mt-3 text-center text-sm text-muted-foreground">
                       <button
-                        onClick={() => setIsEmailMode(true)}
+                        onClick={() => setIsEmailMode(false)}
                         className="text-primary hover:underline"
                       >
-                        {t('auth.orUseEmail')} {/* למשל "או הירשם באמצעות מייל" */}
+                        {t('auth.orUsePhone')} {/* למשל "או הירשם באמצעות טלפון" */}
                       </button>
                     </div>
-                 </div>
+                  )}
+                </div>
+              ) : (
+
+                <div className="space-y-2">
+                  <Label htmlFor="phone" className="flex items-center gap-2">
+                    <Phone className="h-4 w-4" />
+                    {t('notifications.enterPhone')}
+                  </Label>
+                  <div className="flex gap-2" dir="ltr">
+                    <Select value={formData.countryCode} onValueChange={(value) => setFormData(prev => ({ ...prev, countryCode: value }))}>
+                      <SelectTrigger className="w-32">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {countries.map((country) => (
+                          <SelectItem key={country.code} value={country.code}>
+                            <div className="flex items-center gap-2">
+                              <span>{country.flag}</span>
+                              <span>{country.code}</span>
+                              <span className="text-sm text-muted-foreground">
+                                {country.name[language as keyof typeof country.name]}
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    <Input
+                      id="phone"
+                      type="tel"
+                      value={formData.phone}
+                      onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                      placeholder={t('auth.enterPhone')}
+                      className="flex-1"
+                      dir="ltr"
+                    />
+                  </div>
+                  <div className="mt-3 text-center text-sm text-muted-foreground">
+                    <button
+                      onClick={() => setIsEmailMode(true)}
+                      className="text-primary hover:underline"
+                    >
+                      {t('auth.orUseEmail')} {/* למשל "או הירשם באמצעות מייל" */}
+                    </button>
+                  </div>
+                </div>
               )}
               <div className="flex gap-3 mt-6">
                 <Button
                   type="button"
                   variant="outline"
-                   onClick={() => setCurrentStep("on")}
+                  onClick={() => setCurrentStep("on")}
                   className="flex-1"
-                  >
+                >
                   {t('common.back')}
                 </Button>
-              <Button
-                type="submit"
-                className="flex-1"
-                onClick={() => {
-                  const content = isEmailMode
-                    ? formData.email
-                    : `${formData.countryCode}${formData.phone.startsWith('05') ? formData.phone.substring(1) : formData.phone}`;
+                <Button
+                  type="submit"
+                  className="flex-1"
+                  onClick={() => {
+                    const content = isEmailMode
+                      ? formData.email
+                      : `${formData.countryCode}${formData.phone.startsWith('05') ? formData.phone.substring(1) : formData.phone}`;
 
-                  handleContactSubmit(content, true);
-                }}
-              >
-                {t('auth.sendCode')}
-              </Button>
+                    handleContactSubmit(content, true);
+                  }}
+                >
+                  {t('auth.sendCode')}
+                </Button>
 
               </div>
             </>
-            )}
-    
+          )}
+
           {currentStep === "otp" && (
-            <OTPVerification 
+            <OTPVerification
               phoneNumber={contactInfo}
               onSubmit={handleOTPSubmit}
               onBack={() => setCurrentStep("contact")}
@@ -405,29 +407,29 @@ const validatePhoneNumber = (number: string, countryCode: string): boolean => {
                 </div>
               </div> */}
 
-              
+
               <div className="bg-muted/50 p-4 rounded-lg mb-4 space-y-2">
                 <p className="text-sm text-muted-foreground">
-                    {language === 'he' ? 'העתק ושמור את הקישור' : 'Copy and save your link'}
-                    <br />
+                  {language === 'he' ? 'העתק ושמור את הקישור' : 'Copy and save your link'}
+                  <br />
 
-                    {language === 'he' ? (
-                      <>
-                        לצפייה ישירה בגלריה האישית של{' '}
-                  <span className="font-medium text-foreground px-1 rounded-md bg-foreground/5">
-                          {currentUser.name}
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        to view{' '}
-                        <span className="font-medium text-foreground">
-                          {currentUser.name}'s
-                        </span>{' '}
-                        personal gallery directly
-                      </>
-                    )}
-                  </p>
+                  {language === 'he' ? (
+                    <>
+                      לצפייה ישירה בגלריה האישית של{' '}
+                      <span className="font-medium text-foreground px-1 rounded-md bg-foreground/5">
+                        {currentUser.name}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      to view{' '}
+                      <span className="font-medium text-foreground">
+                        {currentUser.name}'s
+                      </span>{' '}
+                      personal gallery directly
+                    </>
+                  )}
+                </p>
 
                 <div className="flex items-center gap-2">
                   <Input
@@ -453,8 +455,8 @@ const validatePhoneNumber = (number: string, countryCode: string): boolean => {
                   </Button>
                 </div>
               </div>
-            
-              <Button onClick={() =>{ setCurrentStep("contact");}} className="w-full">
+
+              <Button onClick={() => { setCurrentStep("contact"); }} className="w-full">
                 {t('notifications.on')}
               </Button>
             </div>
@@ -468,7 +470,7 @@ const validatePhoneNumber = (number: string, countryCode: string): boolean => {
                 </div>
               </div> */}
 
-              
+
               <div className="bg-muted/50 p-4 rounded-lg mb-4 space-y-2">
                 <p className="text-sm text-muted-foreground">
                   {language === 'he' ? 'העתק ושמור את הקישור' : 'Copy and save your link'}
@@ -499,8 +501,8 @@ const validatePhoneNumber = (number: string, countryCode: string): boolean => {
                   </Button>
                 </div>
               </div>
-            
-              <Button onClick={() =>{ turnOffNotification(); setCurrentStep("hidden");}} className="w-full bg-red-400 hover:bg-red-500">
+
+              <Button onClick={() => { turnOffNotification(); setCurrentStep("hidden"); }} className="w-full bg-red-400 hover:bg-red-500">
                 {t('notifications.off')}
               </Button>
             </div>

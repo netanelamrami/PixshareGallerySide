@@ -47,6 +47,7 @@ interface GalleryProps {
   selectedImages?: Set<string>;
   onImageSelect?: (imageId: string) => void;
   columns?: number;
+  isKimama?: boolean;
   onAuthComplete?: (userData: {
     contact: string;
     otp: string;
@@ -62,6 +63,7 @@ export const Gallery = ({
   images,
   favoriteImages,
   onToggleFavorite,
+  isKimama,
   galleryType,
   onAlbumClick,
   selectedAlbum,
@@ -794,6 +796,7 @@ useEffect(() => {
         images={images}
         autoDownload={false}
         event={event}
+        isKimama={isKimama}
       />
 
       <BackToTopButton />
