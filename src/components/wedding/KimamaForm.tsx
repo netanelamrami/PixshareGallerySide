@@ -45,6 +45,8 @@ export const KimamaForm = ({ event, onViewAllPhotos, onViewMyPhotos, onComplete,
   const [isTelegramModalOpen, setIsTelegramModalOpen] = useState(false);
   const [isFaqOpen, setIsFaqOpen] = useState(false);
   const [openIndex, setOpenIndex] = useState(null);
+   const subject = encodeURIComponent("פנייה לצוות קימאמה | Pixshare");
+
   useEffect(() => {
     // Set event photo based on device type
     if (!isMobile() && !event?.isEventPhotoSame) {
@@ -636,14 +638,13 @@ export const KimamaForm = ({ event, onViewAllPhotos, onViewMyPhotos, onComplete,
                   {language === "he" ? "צור קשר" : "Contact Kimama Team"}
                 </h3>
 
-                {/* Call */}
-                <a
-                  href="tel:+972501234567"
-                  className="flex items-center gap-3 p-4 bg-gradient-to-r from-orange-500 to-yellow-400 rounded-xl text-white items-center justify-center" 
-                >
-                  ✉️ Customers@campkimama.org
 
-                </a>
+              <a
+                href={`mailto:Customers@campkimama.org?subject=${subject}`}
+                className="flex items-center gap-3 p-4 bg-gradient-to-r from-orange-500 to-yellow-400 rounded-xl text-white items-center justify-center"
+              >
+                ✉️ Customers@campkimama.org
+              </a>
 
                 {/* Email */}
                 {/* <a
