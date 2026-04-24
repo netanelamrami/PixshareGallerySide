@@ -42,4 +42,5 @@ export type RegisterFacesRequest = {
     imageUrl: string;
     name: string;
   }[];
+  sendNotification: string;
 };

@@ -36,14 +36,11 @@ export const MasonryGrid = ({
   showAlbumDividers = false,
   albums = []
 }: MasonryGridProps) => {
-  // אלגוריתם מאוזן משופר - מחשב גובה אמיתי ומאזן טוב יותר
   const distributeImagesBalanced = (images: GalleryImage[], numColumns: number) => {
     const columnArrays = Array.from({ length: numColumns }, () => [] as GalleryImage[]);
     const columnHeights = Array.from({ length: numColumns }, () => 0);
-    // console.log('Distributing images into columns:', images, 'images across', numColumns, 'columns');
     images.forEach((image) => {
 
-      // מציאת העמודה הקצרה ביותר
       const shortestColumnIndex = columnHeights.indexOf(Math.min(...columnHeights));
       columnArrays[shortestColumnIndex].push(image);
       columnHeights[shortestColumnIndex] += (image.photoHeight || 0) + 4;

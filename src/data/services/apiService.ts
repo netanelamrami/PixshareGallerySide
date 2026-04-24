@@ -1,11 +1,40 @@
 import { RegisterFacesRequest, User } from "@/types/auth";
 import { statistic } from "@/types/event";
 
-//const BASE_URL = "https://api.pixshare.live/PixApi/api";
-const BASE_URL = "http://localhost:5050/api";
- //const BASE_URL = "https://api.pixshare.live/PixshareTest/api";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
+
+// PixShare External API credentials (required by ApiClientAuthMiddleware)
+const EXT_API_KEY    = 'A6nSBfjnYIsEby05KIUEbI1drmgAcKjq';
+const EXT_API_SECRET = 'Xw8l1YpnRk42IN1UEcBBmmiZ2nohNx4H';
+const EXT_AUTH_BASIC = `Basic ${btoa(`${EXT_API_KEY}:${EXT_API_SECRET}`)}`;
+const EXT_HEADERS: HeadersInit = {
+  'Content-Type': 'application/json',
+  'X-API-KEY': EXT_API_KEY,
+  'Authorization': EXT_AUTH_BASIC,
+};
 
 export const apiService = {
+  /** Check whether a phone number has paid to access a specific event's gallery.
+   *  Returns { exists: boolean, isPaid: boolean } */
+  async verifyGalleryPayment(phoneNumber: string, eventId: number): Promise<{ exists: boolean; isPaid: boolean }> {
+    try {
+      const res = await fetch(
+        `${BASE_URL}/external/users-access/verifyUserPayment?phoneNumber=${encodeURIComponent(phoneNumber)}&eventId=${eventId}`,
+        { headers: EXT_HEADERS }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        return { exists: data.exists ?? true, isPaid: data.isPaid ?? false };
+      }
+      if (res.status === 404) {
+        return { exists: false, isPaid: false };
+      }
+      return { exists: false, isPaid: false };
+    } catch {
+      return { exists: false, isPaid: false };
+    }
+  },
+
   async sendSMS(phoneNumber: string, message: string, otp: boolean = true) {
     try {
       const smsData = {
@@ -138,7 +167,6 @@ async reRegisterSelectedFaces(data: RegisterFacesRequest) {
         method: 'POST',
         body: formData
       });
-      
       if (!res.ok) {
         throw new Error("Failed to register user");
       }

@@ -37,7 +37,6 @@ export const EventLockModal = ({ isOpen, onClose, onSuccess, eventId }: EventLoc
     try {
       // Call API to check event lock
       const isCodeValid = await apiService.checkEventLock(eventId, code)
-      console.log(isCodeValid)
       if (isCodeValid) {
         onSuccess();
         onClose();

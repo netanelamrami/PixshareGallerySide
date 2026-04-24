@@ -63,7 +63,6 @@ export const SelfieCapture = ({ onCapture, onBack, variant = "default", autoOpen
     //       videoRef.current.play().catch(error => {
     //         console.error("Error playing video:", error);
     //       });
-    //       console.log('Video element source set to stream');
     //     } else {
     //       console.warn('videoRef.current עדיין null אחרי ההשהייה');
     //     }

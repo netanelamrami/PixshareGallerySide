@@ -21,7 +21,6 @@ export const ImageSave = ({
 }: ImageSaveProps) => {
   const { t } = useLanguage();
   const [showInstructions, setShowInstructions] = useState(true);
-  console.log(imageName);
   return (
     <div
       className="h-full flex flex-col bg-background"

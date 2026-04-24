@@ -188,7 +188,6 @@ const Index = ({ isKimama = false }: IndexProps) => {
     }
   }, []);
   useEffect(() => {
-    console.log("ShowAuthFlow changed:", showAuthFlow);
   }, [showAuthFlow]);
 
   useEffect(() => {
@@ -410,7 +409,6 @@ const Index = ({ isKimama = false }: IndexProps) => {
       //   loadUserImages(currentUser, true);
       //   return;
       // }
-      console.log("Switching to my photos for user:", user);
       if (!isAuthenticated && !urlUserId && !user.relatedToUserId) {
         setShowAuthFlow(true);
         return;

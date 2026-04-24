@@ -85,7 +85,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   //     // Dispatch event for any listening components
   //     //window.dispatchEvent(new CustomEvent('authStateChanged', { detail: authState }));
-  //         console.log( authState);
 
   //   } catch (error) {
   //     console.error('AuthProvider - ERROR saving to localStorage:', error);
@@ -140,9 +139,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
 const switchUser = (userId: string, users?: User[]) => {
-  const userList = users || authState.users; // אם קיבלנו רשימה חדשה, נשתמש בה
+  const userList = users || authState.users; 
   const user = userList.find((u) => u.id === userId);
-  console.log("Switching to user:", userId, user);  
   if (user) {
     setAuthState((prev) => ({
       ...prev,

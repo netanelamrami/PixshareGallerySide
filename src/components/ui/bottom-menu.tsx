@@ -214,7 +214,6 @@ export const BottomMenu = ({ onViewAllPhotos, onShareEvent, onDownloadAll, onTog
             onClose={() => setShowAuthModal(false)}
             event={event}
             onComplete={(authData) => {
-              console.log("Auth Complete Data:", authData);
               // Add user to multi-user system
               const newUser = addUser({
                 name: authData.contact.includes('@') ? authData.contact.split('@')[0] : '',

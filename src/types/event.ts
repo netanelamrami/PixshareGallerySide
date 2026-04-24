@@ -1,5 +1,6 @@
 // import { event } from '@/types/event';
 
+import { b } from "node_modules/framer-motion/dist/types.d-DagZKalS";
 import { BusinessCard } from "./businessCard";
 
 // import { BusinessCard } from "./businessCard";
@@ -51,6 +52,13 @@ export interface event {
   eventPhotoLockType?: string;
   hasFaceRecognition: boolean;
   externalLink?: string;
+  registerWithName?: boolean;
+  customButtonImageHE?: string;
+  customButtonImageEN?: string;
+  customButtonLinkHE?: string;
+  customButtonLinkEN?: string;
+  isPaidGallery?: boolean;
+  galleryPaymentLink?: string;
 }
 
 

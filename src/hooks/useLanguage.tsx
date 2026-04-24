@@ -640,8 +640,7 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   // const setDefaultLanguage = (defaultLang: Language) => {
   //   const savedLanguage = localStorage.getItem('language') as Language;
-  //   console.log('dddddddd' +  defaultLang)
-  //   console.log('dddddddd3333333333' +  savedLanguage)
+
   //   if (!savedLanguage || defaultLang != null) {
   //     setLanguage(savedLanguage);
   //   }
