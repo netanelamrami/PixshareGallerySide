@@ -16,6 +16,32 @@ const EXT_HEADERS: HeadersInit = {
 export const apiService = {
   /** Check whether a phone number has paid to access a specific event's gallery.
    *  Returns { exists: boolean, isPaid: boolean } */
+  /** Submit a lead from the gallery lead-capture widget */
+  async submitLead(payload: {
+    eventId: number;
+    name: string;
+    phone: string;
+    email?: string;
+    note?: string;
+  }): Promise<{ success: boolean; isDuplicate?: boolean }> {
+    try {
+      const res = await fetch(`${BASE_URL}/GalleryLeads`, {
+        method: 'POST',
+        headers: EXT_HEADERS,
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return { success: true, isDuplicate: data.isDuplicate ?? false };
+      }
+      return { success: false };
+    } catch {
+      return { success: false };
+    }
+  },
+
+  /** Check whether a phone number has paid to access a specific event's gallery.
+   *  Returns { exists: boolean, isPaid: boolean } */
   async verifyGalleryPayment(phoneNumber: string, eventId: number): Promise<{ exists: boolean; isPaid: boolean }> {
     try {
       const res = await fetch(
@@ -504,6 +530,68 @@ https://gallery.pixshare.live/${eventLink}?userid=${userId}
     console.error("GetPostDescriptionByEventId API Error:", error);
     throw error;
   }
-  }
+  },
+
+  // ── Survey ───────────────────────────────────────────────────────────────────
+
+  async getSurveyByEvent(eventId: number): Promise<any | null> {
+    try {
+      const res = await fetch(`${BASE_URL}/Survey/by-event/${eventId}`);
+      if (res.status === 404) return null;
+      if (!res.ok) return null;
+      return res.json();
+    } catch {
+      return null;
+    }
+  },
+
+  async hasSurveyUserResponded(surveyId: number, userId: number): Promise<boolean> {
+    try {
+      const res = await fetch(`${BASE_URL}/Survey/${surveyId}/user-responded/${userId}`);
+      if (!res.ok) return false;
+      const data = await res.json();
+      return data.responded ?? false;
+    } catch {
+      return false;
+    }
+  },
+
+  async submitSurveyResponse(response: {
+    surveyId: number;
+    userId: number;
+    isSkipped: boolean;
+    answers: Array<{
+      questionId: number;
+      freeText?: string;
+      starRating?: number;
+      selectedOptionId?: number;
+    }>;
+  }): Promise<void> {
+    try {
+      await fetch(`${BASE_URL}/Survey/respond`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(response),
+      });
+    } catch {
+      /* silent — survey failure should never block gallery access */
+    }
+  },
+
+  /**
+   * Verify an admin link token server-side.
+   * The server checks the token against the stored AdminToken — never exposed in the public event response.
+   */
+  async verifyAdminToken(eventLink: string, token: string): Promise<boolean> {
+    try {
+      const res = await fetch(
+        `${BASE_URL}/Event/verify-admin?eventLink=${encodeURIComponent(eventLink)}&token=${encodeURIComponent(token)}`
+      );
+      const data = await res.json();
+      return data?.isValid === true;
+    } catch {
+      return false;
+    }
+  },
 }
 

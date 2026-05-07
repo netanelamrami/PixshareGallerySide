@@ -204,10 +204,13 @@ const Index = ({ isKimama = false }: IndexProps) => {
     const keyParam = params.get("access");
     if (!keyParam) return;
 
-    const decoded = atob(keyParam); // פענוח מ־Base64
-    if (decoded === baseUrl) {
-      setshowAllPhotosBt(true);
-    }
+    // Secure server-side token verification — no more base64 trickery
+    (async () => {
+      const eventLinkParam = window.location.pathname.replace(/^\//, '').split('/')[0];
+      if (!eventLinkParam) return;
+      const isValid = await apiService.verifyAdminToken(eventLinkParam, keyParam);
+      if (isValid) setshowAllPhotosBt(true);
+    })();
   }, []);
 
   useEffect(() => {

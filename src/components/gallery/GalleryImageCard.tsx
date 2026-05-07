@@ -144,15 +144,17 @@ export const GalleryImageCard = ({
 ) : isVideo ? (
   <video
     id={`video-${image.id}`}
-    src={image.largeSrc}
+    src={`${image.largeSrc}#t=0.5`}   // seek to 0.5s — forces thumbnail on mobile
     className={cn(
-      "w-full h-auto object-cover transition-opacity duration-300",
+      "w-full object-cover transition-opacity duration-300",
       isLoaded ? "opacity-100" : "opacity-0"
     )}
+    style={{ height: `${image.photoHeight}px` }}
     preload="metadata"
     muted
     playsInline
     onLoadedData={handleImageLoad}
+    onLoadedMetadata={handleImageLoad}  // fallback for browsers that fire this instead
   />
 ) : (
   <img

@@ -59,6 +59,7 @@ export interface event {
   customButtonLinkEN?: string;
   isPaidGallery?: boolean;
   galleryPaymentLink?: string;
+  isLeadCapture?: boolean;
 }
 
 

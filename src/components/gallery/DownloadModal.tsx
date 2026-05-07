@@ -102,7 +102,7 @@ export const DownloadModal = ({ isOpen, onClose, imageCount, isKimama, images = 
           UserId: userId,
           EventId: event.id,
           Email: formData.email,
-          Phone: phoneData,
+          PhoneNumber: phoneData,
           HighQuality: formData.quality == 'high' ? true : false, // "high" or "web"
           DownloadAllPhotos: galleryType === 'all' // true אם זה כל התמונות, false אם זה התמונות שלי
         };

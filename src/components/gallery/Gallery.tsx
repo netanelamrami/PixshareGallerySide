@@ -29,6 +29,8 @@ import { useNavigate } from "react-router-dom";
 import QRCode from "qrcode";
 import { BackToTopButton } from "../ui/back-to-top";
 import { apiService } from "@/data/services/apiService";
+import { LeadCaptureWidget } from "../leads/LeadCaptureWidget";
+import { LeadBanner } from "../leads/LeadBanner";
 
 interface GalleryProps {
   event: event;
@@ -637,6 +639,14 @@ useEffect(() => {
           imageCount={images.length}
         />
       )}
+      {/* Lead Banner — inline ad, only when lead capture enabled */}
+      {event?.isLeadCapture && (
+        <LeadBanner
+          eventId={event.id}
+          language={event.eventLanguage === 'HE' ? 'he' : 'en'}
+        />
+      )}
+
       {/* Albums Section - Only show albums that have images for this user */}
       {images.length > 0 &&
         (() => {
@@ -871,6 +881,8 @@ useEffect(() => {
           imageName={shareModalImage.name}
         />
       )}
+
+      {/* LeadCaptureWidget removed — replaced by inline LeadBanner above */}
     </div>
   );
 };

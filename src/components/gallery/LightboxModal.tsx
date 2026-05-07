@@ -485,9 +485,9 @@ const isVideo = currentImage?.largeSrc?.match(/\.(mp4|webm|mov|m4v)$/i);
         </Button>
       )}
 
-      {/* Image Container */}
+      {/* Image Container — top offset matches header height (~4rem) */}
       <div
-        className="absolute inset-0 flex items-center justify-center p-4 cursor-pointer"
+        className="absolute inset-0 flex items-center justify-center p-4 cursor-pointer pt-[4.5rem]"
         onClick={(e) => e.stopPropagation()}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -515,8 +515,10 @@ const isVideo = currentImage?.largeSrc?.match(/\.(mp4|webm|mov|m4v)$/i);
     src={currentImage?.largeSrc}
     controls
     autoPlay
+    playsInline
     className={cn(
-      "max-w-full w-auto h-auto object-contain max-h-[calc(100vh-12vh)]",
+      "max-w-full w-auto object-contain",
+      "max-h-[calc(100svh-5rem)]",   // 5rem = header bar
       imageLoaded ? "opacity-100" : "opacity-0"
     )}
     onLoadedData={() => setImageLoaded(true)}
@@ -527,7 +529,8 @@ const isVideo = currentImage?.largeSrc?.match(/\.(mp4|webm|mov|m4v)$/i);
     alt={currentImage.alt}
     ref={imgRef}
     className={cn(
-      "max-w-full w-auto h-auto object-contain transition-opacity duration-300 max-h-[calc(100vh-12vh)]",
+      "max-w-full w-auto h-auto object-contain transition-opacity duration-300",
+      "max-h-[calc(100svh-5rem)]",   // 5rem = header bar
       imageLoaded ? "opacity-100" : "opacity-0"
     )}
     onLoad={() => setImageLoaded(true)}

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { AlertTriangle, CheckCircle2, Loader2, Mail, Phone } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Loader2, Phone, RefreshCw } from 'lucide-react';
 import { apiService } from '@/data/services/apiService';
 
 interface GalleryPaymentModalProps {
@@ -28,6 +28,8 @@ export function GalleryPaymentModal({
   const isHe = language === 'he';
   const [phase, setPhase] = useState<Phase>('warning');
   const [iframeLoaded, setIframeLoaded] = useState(false);
+  const [iframeKey, setIframeKey] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const pollingTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const timeoutTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -66,6 +68,12 @@ export function GalleryPaymentModal({
     startPolling();
   };
 
+  const handleRefreshIframe = () => {
+    setIsRefreshing(true);
+    setIframeLoaded(false);
+    setIframeKey(k => k + 1);
+  };
+
   const handleSuccessClose = () => {
     onSuccess();
   };
@@ -89,11 +97,11 @@ export function GalleryPaymentModal({
               <AlertTriangle className="h-6 w-6 text-amber-500 flex-shrink-0 mt-0.5" />
               <div className="space-y-2">
                 <p className="font-semibold text-amber-700 dark:text-amber-400">
-                  {isHe ? 'שים לב — חשוב מאוד!' : 'Important — please read!'}
+                  {isHe ? 'שים לב' : 'Important!'}
                 </p>
                 <p className="text-sm text-amber-700 dark:text-amber-300">
                   {isHe
-                    ? 'בטופס התשלום חייב להזין את מספר הטלפון שנרשמת איתו לגלרייה. אם תזין מספר אחר — התשלום לא יזוהה ולא תוכל להיכנס.'
+                    ? 'בטופס התשלום חייב להזין את מספר הטלפון שנרשמת איתו לגלרייה. אם תזין מספר אחר  התשלום לא יזוהה ולא תוכל להיכנס.'
                     : 'In the payment form, you must enter the same phone number you used to register for the gallery. Using a different number will prevent access.'}
                 </p>
                 <div className="flex items-center gap-2 mt-2 p-2 bg-amber-100 dark:bg-amber-900/40 rounded">
@@ -109,7 +117,7 @@ export function GalleryPaymentModal({
               onClick={handleGoToPayment}
               className="w-full h-12 rounded-md bg-primary text-primary-foreground font-semibold text-base hover:bg-primary/90 transition-colors"
             >
-              {isHe ? 'הבנתי — עבור לתשלום' : 'Understood — go to payment'}
+              {isHe ? 'הבנתי, עבור לתשלום' : 'Understood, go to payment'}
             </button>
             <button
               onClick={onCancel}
@@ -190,9 +198,22 @@ export function GalleryPaymentModal({
             <p className="text-sm font-semibold">{isHe ? 'תשלום לגלרייה' : 'Gallery Payment'}</p>
             <p className="text-xs text-muted-foreground">{isHe ? 'ממתין לאישור תשלום...' : 'Waiting for payment confirmation...'}</p>
           </div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            {isHe ? 'בודק אוטומטית' : 'Auto-checking'}
+          <div className="flex items-center gap-3">
+            {/* Refresh button */}
+            <button
+              onClick={handleRefreshIframe}
+              disabled={!iframeLoaded}
+              title={isHe ? 'רענן את טופס התשלום' : 'Refresh payment form'}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+              {isHe ? 'רענון' : 'Refresh'}
+            </button>
+            {/* Polling indicator */}
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              {isHe ? 'בודק אוטומטית' : 'Auto-checking'}
+            </div>
           </div>
         </div>
 
@@ -214,9 +235,10 @@ export function GalleryPaymentModal({
             </div>
           )}
           <iframe
+            key={iframeKey}
             src={paymentLink}
             className="w-full h-full border-0"
-            onLoad={() => setIframeLoaded(true)}
+            onLoad={() => { setIframeLoaded(true); setIsRefreshing(false); }}
             title="Gallery Payment"
             allow="payment"
           />
