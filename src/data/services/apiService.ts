@@ -593,5 +593,139 @@ https://gallery.pixshare.live/${eventLink}?userid=${userId}
       return false;
     }
   },
+
+  // ── Site OTP (reuses existing Photographer OTP endpoints) ────────────────────
+
+  /** Send a 4-digit OTP to a phone number via SMS */
+  async siteSendOtpPhone(phoneNumber: string): Promise<void> {
+    await fetch(`${BASE_URL}/Photographer/sendSMS`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ PhoneNumber: phoneNumber, message: 'קוד האימות שלך לגלריה', OTP: true }),
+    });
+  },
+
+  /** Send a 4-digit OTP to an email address */
+  async siteSendOtpEmail(email: string): Promise<void> {
+    await fetch(`${BASE_URL}/Photographer/SendEmailOtp?email=${encodeURIComponent(email)}`, {
+      method: 'POST',
+    });
+  },
+
+  /** Verify a 4-digit OTP code (works for both phone and email) */
+  async siteVerifyOtp(contact: string, code: string): Promise<{ verified: boolean }> {
+    try {
+      const res = await fetch(`${BASE_URL}/Photographer/verifyOtp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ PhoneNumberOrEmail: contact, Otp: code }),
+      });
+      if (!res.ok) return { verified: false };
+      return res.json();
+    } catch {
+      return { verified: false };
+    }
+  },
+
+  // ── Site ─────────────────────────────────────────────────────────────────────
+
+  /** Get public site data by slug (branding + events list). */
+  async getSiteBySlug(slug: string): Promise<any | null> {
+    try {
+      const res = await fetch(`${BASE_URL}/Site/by-slug/${encodeURIComponent(slug)}`);
+      if (res.status === 404) return null;
+      if (!res.ok) return null;
+      return res.json();
+    } catch {
+      return null;
+    }
+  },
+
+  /**
+   * Login to a site using a selfie (face search).
+   * Returns { success, userId, name, photoUrl, message }
+   */
+  async siteLogin(siteId: number, selfieBase64: string): Promise<any> {
+    const formData = new FormData();
+    const blob = await fetch(selfieBase64).then(r => r.blob());
+    formData.append('selfie', blob, 'selfie.jpg');
+
+    const res = await fetch(`${BASE_URL}/Site/${siteId}/login`, {
+      method: 'POST',
+      body: formData,
+    });
+    if (!res.ok) throw new Error('Login failed');
+    return res.json();
+  },
+
+  /**
+   * Register a visitor to a site using a selfie + contact info.
+   * Returns { success, userId, name, photoUrl, message, isExisting }
+   */
+  async siteRegister(
+    siteId: number,
+    selfieBase64: string,
+    data: { fullName?: string; phoneNumber?: string; email?: string; authenticateBy?: string; sendNotification?: boolean }
+  ): Promise<any> {
+    const formData = new FormData();
+    const blob = await fetch(selfieBase64).then(r => r.blob());
+    formData.append('selfie', blob, 'selfie.jpg');
+    if (data.fullName)       formData.append('fullName', data.fullName);
+    if (data.phoneNumber)    formData.append('phoneNumber', data.phoneNumber);
+    if (data.email)          formData.append('email', data.email);
+    formData.append('authenticateBy', data.authenticateBy ?? 'PhoneNumber');
+    formData.append('sendNotification', String(data.sendNotification ?? true));
+
+    const res = await fetch(`${BASE_URL}/Site/${siteId}/register`, {
+      method: 'POST',
+      body: formData,
+    });
+    if (!res.ok) throw new Error('Registration failed');
+    return res.json();
+  },
+
+  /** Get site stats (optionally per-user). */
+  async getSiteStats(siteId: number, userId?: number): Promise<any> {
+    const query = userId ? `?userId=${userId}` : '';
+    const res = await fetch(`${BASE_URL}/Site/${siteId}/stats${query}`);
+    if (!res.ok) throw new Error('Failed to get site stats');
+    return res.json();
+  },
+
+  /**
+   * Get basic info (name, photoUrl) for a specific site user.
+   * Used in gallery photographer-preview mode.
+   */
+  async getSiteUserInfo(siteId: number, userId: number): Promise<{ success: boolean; userId?: number; name?: string; photoUrl?: string } | null> {
+    try {
+      const res = await fetch(`${BASE_URL}/Site/${siteId}/user/${userId}`);
+      if (!res.ok) return null;
+      return res.json();
+    } catch {
+      return null;
+    }
+  },
+
+  /**
+   * Check if a user with this email/phone is already registered to this site.
+   * Returns { success, userId, name, photoUrl, message }
+   * success=false means not registered → caller should show selfie registration.
+   */
+  async siteLoginByContact(
+    siteId: number,
+    contact: { email?: string; phoneNumber?: string }
+  ): Promise<{ success: boolean; userId?: number; name?: string; photoUrl?: string; message?: string }> {
+    try {
+      const res = await fetch(`${BASE_URL}/Site/${siteId}/login-by-contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(contact),
+      });
+      if (!res.ok) return { success: false };
+      return res.json();
+    } catch {
+      return { success: false };
+    }
+  },
 }
 

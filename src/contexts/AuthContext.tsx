@@ -51,6 +51,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           return;
         }
         const users = await apiService.getUserForUser(userid);
+
         // if(users.length > 1){
         //   users.push({
         //     id: "allPhotosUsers",
@@ -98,6 +99,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
+
         if (parsed.isAuthenticated && !authState.isAuthenticated) {
           setAuthState({
             ...parsed,
@@ -239,6 +241,7 @@ const switchUser = (userId: string, users?: User[]) => {
   };
 
   const setUsers = (users: React.SetStateAction<User[]>) => {
+
     setAuthState((prev) => ({
       ...prev,
       users: typeof users === "function" ? users(prev.users) : users,
