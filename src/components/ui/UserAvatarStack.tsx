@@ -38,7 +38,6 @@ export const UserAvatarStack = ({ totalImages, onDownloadAll, event, onAuthCompl
 
   // Force update when users change
   // React.useEffect(() => {
-  //   console.log('UserAvatarStack - users changed:', users.length, 'current user:', currentUser?.id);
   //   //setForceUpdate(prev => prev + 1);
   // }, [users.length, currentUser?.id]);
 
@@ -83,7 +82,8 @@ export const UserAvatarStack = ({ totalImages, onDownloadAll, event, onAuthCompl
             </PopoverTrigger>
                         <PopoverContent align="end" className="w-48 p-2" dir={language === 'he' ? 'rtl' : 'ltr'}>
 
-              {isMobile && totalImages > 0 && totalImages < 600 && (
+{/* totalImages < 600 &&  */}
+              {isMobile && totalImages > 0 && ( 
                 <>
                   <Button
                     variant="ghost"
@@ -162,7 +162,6 @@ export const UserAvatarStack = ({ totalImages, onDownloadAll, event, onAuthCompl
                 selfieImage: authData.selfieData
               });
               
-              console.log('New user added in UserAvatarStack:', newUser);
               setShowAuthModal(false);
               onAuthComplete?.(authData);
               
@@ -276,7 +275,6 @@ export const UserAvatarStack = ({ totalImages, onDownloadAll, event, onAuthCompl
               {/* Current User */}
               {galletyCustomerType !== 'kimama' && (
                 <>
-                  {console.log("galletyCustomerType:", galletyCustomerType)}
                   <div className="px-2 py-2 bg-muted/50 rounded-md">
                     <p className="text-xs text-muted-foreground mb-1">
                       {language === 'he' ? 'משתמש מוצג' : 'Active User'}

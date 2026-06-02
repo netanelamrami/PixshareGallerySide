@@ -8,7 +8,7 @@ import { MoreVertical, Share2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/useLanguage";
 import { event } from "@/types/event";
-
+import { Play } from "lucide-react";
 interface GalleryImageCardProps {
   image: GalleryImage;
   event: event;
@@ -56,13 +56,26 @@ export const GalleryImageCard = ({
   };
 
   const handleClick = () => {
-    if (isSelectionMode && onSelectionChange) {
-      onSelectionChange();
-    } else {
-      onClick();
-    }
-  };
+  // if (isVideo) {
+  //   const video = document.getElementById(`video-${image.id}`) as HTMLVideoElement;
+  //   if (video) video.play();
+  //   return;
+  // }
 
+  if (isSelectionMode && onSelectionChange) {
+    onSelectionChange();
+  } else {
+    onClick();
+  }
+};
+  // const handleClick = () => {
+  //   if (isSelectionMode && onSelectionChange) {
+  //     onSelectionChange();
+  //   } else {
+  //     onClick();
+  //   }
+  // };
+  const isVideo = image.largeSrc?.match(/\.(mp4|webm|mov|m4v)$/i);
   const handleDownload = () => {
     const link = document.createElement("a");
     link.href = image.src;
@@ -122,6 +135,42 @@ export const GalleryImageCard = ({
       )}
       
       {hasError ? (
+  <div
+    className="w-full bg-muted flex items-center justify-center text-muted-foreground rounded-none"
+    style={{ height: `${image.photoHeight}px` }}
+  >
+    <span>{t("toast.error.title")}</span>
+  </div>
+) : isVideo ? (
+  <video
+    id={`video-${image.id}`}
+    src={`${image.largeSrc}#t=0.5`}   // seek to 0.5s — forces thumbnail on mobile
+    className={cn(
+      "w-full object-cover transition-opacity duration-300",
+      isLoaded ? "opacity-100" : "opacity-0"
+    )}
+    style={{ height: `${image.photoHeight}px` }}
+    preload="metadata"
+    muted
+    playsInline
+    onLoadedData={handleImageLoad}
+    onLoadedMetadata={handleImageLoad}  // fallback for browsers that fire this instead
+  />
+) : (
+  <img
+    src={image.src}
+    alt={image.alt}
+    className={cn(
+      "w-full h-auto object-cover transition-opacity duration-300",
+      isLoaded ? "opacity-100" : "opacity-0"
+    )}
+    onLoad={handleImageLoad}
+    onError={handleImageError}
+    loading="lazy"
+  />
+)}
+
+      {/* {hasError ? (
         <div 
           className="w-full bg-muted flex items-center justify-center text-muted-foreground rounded-none "
           style={{ height: `${image.photoHeight}px` }}
@@ -129,20 +178,51 @@ export const GalleryImageCard = ({
           <span>{t('toast.error.title')}</span>
         </div>
       ) : (
-        <img
-          src={image.src}
-          alt={image.alt}
-          className={cn(
-            "w-full h-auto object-cover transition-opacity duration-300",
-            isLoaded ? "opacity-100" : "opacity-0"
-          )}
-          onLoad={handleImageLoad}
-          onError={handleImageError}
-          loading="lazy"
-        />
-      )}
+        {isVideo ? (
+  <video
+    src={image.largeSrc}
+    className={cn(
+      "w-full h-auto object-cover transition-opacity duration-300",
+      isLoaded ? "opacity-100" : "opacity-0"
+    )}
+    preload="metadata"
+    muted
+    playsInline
+    onLoadedData={handleImageLoad}
+  />
+) : (
+  <img
+    src={image.src}
+    alt={image.alt}
+    className={cn(
+      "w-full h-auto object-cover transition-opacity duration-300",
+      isLoaded ? "opacity-100" : "opacity-0"
+    )}
+    onLoad={handleImageLoad}
+    onError={handleImageError}
+    loading="lazy"
+  />
+)}
+        // <img
+        //   src={image.src}
+        //   alt={image.alt}
+        //   className={cn(
+        //     "w-full h-auto object-cover transition-opacity duration-300",
+        //     isLoaded ? "opacity-100" : "opacity-0"
+        //   )}
+        //   onLoad={handleImageLoad}
+        //   onError={handleImageError}
+        //   loading="lazy"
+        // />
+      )} */}
       
-
+{isVideo && (
+  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+    <div className="bg-black/60 rounded-full p-3">
+      <Play className="w-6 h-6 text-white fill-white" />
+    </div>
+  </div>
+)}
         {/* Selection mode overlay */}
       {isSelectionMode && (
         <>

@@ -128,6 +128,7 @@ const translations = {
     'auth.registrationSuccessDesc': 'נרשמת בהצלחה!',
     'auth.registrationSuccessWithSMS': 'נרשמת בהצלחה! SMS נשלח עם קישור לגלריה שלך',
     'auth.smsWarning': 'הרישום הצליח אבל שליחת SMS נכשלה. תוכל לגשת לגלריה דרך הקישור באתר.',
+    'auth.emailWarning': 'הרישום הצליח אבל שליחת המייל נכשלה. תוכל לגשת לגלריה דרך הקישור באתר.',
     'auth.eventRegistrationSuccess': 'רישום הושלם!',
     'auth.eventRegistrationDesc': 'נרשמת בהצלחה לאירוע!',
     'auth.registrationError': 'שגיאה ברישום',
@@ -144,11 +145,11 @@ const translations = {
     'downloadModal.partialErrorDesc': 'חלק מהתמונות לא הורדו, נסו שוב',
     'downloadModal.downloadError': 'אירעה שגיאה בהורדת התמונות, נסו שוב',
     'downloadModal.albumDownload': 'הורדת אלבום',
-    'downloadModal.allPhotosDownload': 'הורדת כל התמונות',
-    'downloadModal.photosWaiting': 'תמונות ממתינות לכם!',
-    'downloadModal.directDownload': 'התמונות יורדו ישירות למכשיר שלכם',
-    'downloadModal.linkDownload': 'השאירו פרטים ונשלח לכם קישור להורדה כשהתמונות מוכנות',
-    'downloadModal.emailOptional': 'מייל (אופציונלי)',
+    'downloadModal.allPhotosDownload': 'הורד כל תמונות',
+    'downloadModal.photosWaiting': 'תמונות בדרך אליך',
+    'downloadModal.directDownload':'הכנס אימייל כדי שנעדכן אותך כאשר הקבצים יהיו מוכנים להורדה.',
+    'downloadModal.linkDownload': 'הכנס אימייל כדי שנעדכן אותך כאשר הקבצים יהיו מוכנים להורדה.',
+    'downloadModal.emailOptional': 'מייל ',
     'downloadModal.phoneOptional': 'טלפון (אופציונלי)',
     'downloadModal.contactNote': '* נדרש לפחות אחד מהפרטים לשליחת הקישור',
     'downloadModal.continueDownload': 'המשך להורדה',
@@ -162,11 +163,11 @@ const translations = {
     'downloadModal.downloadNow': 'הורד עכשיו',
     'downloadModal.sendRequest': 'שלח בקשה',
     'downloadModal.downloadStarted': 'ההורדה החלה',
-    'downloadModal.requestSent': 'הבקשה נשלחה בהצלחה',
+    'downloadModal.requestSent': 'אנחנו מכינים את התמונות שלך',
     'downloadModal.downloadingToDevice': 'התמונות מורדות למכשיר שלכם.',
-    'downloadModal.autoClose': '(חלון זה ייסגר אוטומטית)',
-    'downloadModal.processingStarted': 'תהליך הכנת התמונות החל.',
-    'downloadModal.linkSoon': 'נשלח לכם קישור להורדה תוך מספר דקות.',
+    // 'downloadModal.autoClose': '(חלון זה ייסגר אוטומטית)',
+    // 'downloadModal.processingStarted': 'אנחנו מכינים את התמונות שלך',
+    'downloadModal.linkSoon': 'תקבל הודעה באימייל ברגע שההורדה שלך תהיה מוכנה.',
     
     // Auth - אימות
     'auth.phoneEntry': 'הרשמה',
@@ -420,6 +421,7 @@ const translations = {
     'auth.registrationSuccessDesc': 'Successfully registered!',
     'auth.registrationSuccessWithSMS': 'Successfully registered! SMS sent with link to your gallery',
     'auth.smsWarning': 'Registration succeeded but SMS sending failed. You can access the gallery through the link on the website.',
+    'auth.emailWarning': 'Registration succeeded but email sending failed. You can access the gallery through the link on the website.',
     'auth.eventRegistrationSuccess': 'Registration Complete!',
     'auth.eventRegistrationDesc': 'Successfully registered for the event!',
     'auth.registrationError': 'Registration Error',
@@ -438,10 +440,10 @@ const translations = {
     'downloadModal.partialErrorDesc': 'Some photos failed to download, please try again',
     'downloadModal.downloadError': 'An error occurred while downloading photos, please try again',
     'downloadModal.albumDownload': 'Album Download',
-    'downloadModal.allPhotosDownload': 'Download All Photos',
-    'downloadModal.photosWaiting': 'photos waiting for you!',
-    'downloadModal.directDownload': 'Photos will be downloaded directly to your device',
-    'downloadModal.linkDownload': 'Leave your details and we\'ll send you a download link when ready',
+    'downloadModal.allPhotosDownload': 'DOWNLOAD PHOTOS',
+    'downloadModal.photosWaiting': 'Photos waiting for you',
+    'downloadModal.directDownload': 'Your email will be used to notify you when the files are ready for download.',
+    'downloadModal.linkDownload': 'Your email will be used to notify you when the files are ready for download.',
     'downloadModal.emailOptional': 'Email (optional)',
     'downloadModal.phoneOptional': 'Phone (optional)',
     'downloadModal.contactNote': '* At least one contact detail is required',
@@ -456,11 +458,11 @@ const translations = {
     'downloadModal.downloadNow': 'Download Now',
     'downloadModal.sendRequest': 'Send Request',
     'downloadModal.downloadStarted': 'Download Started!',
-    'downloadModal.requestSent': 'Request Sent Successfully!',
+    'downloadModal.requestSent': 'WE ARE PREPARING YOUR PHOTOS',
     'downloadModal.downloadingToDevice': 'Photos are being downloaded to your device.',
     'downloadModal.autoClose': '(This window will close automatically)',
     'downloadModal.processingStarted': 'Photo processing has started.',
-    'downloadModal.linkSoon': 'We\'ll send you a download link within minutes.',
+    'downloadModal.linkSoon': 'You will be notified by email once your download is ready.',
     
     // Auth
     'auth.phoneEntry': 'Sign Up',
@@ -640,8 +642,7 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   // const setDefaultLanguage = (defaultLang: Language) => {
   //   const savedLanguage = localStorage.getItem('language') as Language;
-  //   console.log('dddddddd' +  defaultLang)
-  //   console.log('dddddddd3333333333' +  savedLanguage)
+
   //   if (!savedLanguage || defaultLang != null) {
   //     setLanguage(savedLanguage);
   //   }

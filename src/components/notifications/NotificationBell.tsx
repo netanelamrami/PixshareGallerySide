@@ -36,7 +36,6 @@ useEffect(() => {
 }, [currentUser]);
 
   const toggleSubscription = () => {
-    console.log("toggleSubscription clicked", currentUser.sendNotification);
     if (currentUser.sendNotification == true) {
       // כבה התראות
           window.dispatchEvent(

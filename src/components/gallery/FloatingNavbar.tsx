@@ -188,7 +188,7 @@ export const FloatingNavbar = ({ event, galleryType, onToggleGalleryType, onDown
               </Button>
             )}
             {/* Download All */}
-          {imageCount > 0 && !isMobile && imageCount < 600 && (
+          {imageCount > 0 && !isMobile && (
             <Button
               variant="ghost"
               size="sm"

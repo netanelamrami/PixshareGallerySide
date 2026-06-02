@@ -3,6 +3,8 @@ import { PhoneCountryInput } from "./PhoneCountryInput";
 import { EmailInput } from "./EmailInput";
 import { OTPVerification } from "./OTPVerification";
 import { SelfieCapture } from "./SelfieCapture";
+import { GalleryPaymentModal } from "./GalleryPaymentModal";
+import { SurveyModal } from "./SurveyModal";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useToast } from "@/hooks/use-toast";
 import { apiService } from "@/data/services/apiService";
@@ -10,14 +12,18 @@ import { event } from "@/types/event";
 import { RegisterFacesRequest, SelectedFace, User } from "@/types/auth";
 import { FaceSelectionGrid } from "./FaceSelectionGrid";
 import { FaceNamesForm } from "./FaceNamesForm";
+import { FAQSupportDialog } from "@/components/gallery/FAQSupportDialog";
+import { faqData } from "@/data/faqData";
 
 type AuthStep =
   | "contact"
   | "otp"
+  | "payment"
   | "selfie"
   | "selectFaces"
   | "complete"
-  | "names";
+  | "names"
+  | "survey";
 
 interface AuthFlowProps {
   event: event;
@@ -42,8 +48,16 @@ export const AuthFlow = ({
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
   const [isVisible, setIsVisible] = useState(false);
+  // Stores the already-registered user if they hit the payment wall mid-login
+  const [existingUserPendingPayment, setExistingUserPendingPayment] = useState<any>(null);
+  // Survey state
+  const [pendingSurvey, setPendingSurvey]       = useState<any | null>(null);
+  const [pendingComplete, setPendingComplete]   = useState<(() => void) | null>(null);
+  const [pendingUserName, setPendingUserName]   = useState<string>('');
+  const [pendingPhotoCount, setPendingPhotoCount] = useState<number | null>(null);
   const [detectedFaces, setDetectedFaces] = useState<string[]>([]);
   const [selectedFaces, setSelectedFaces] = useState<Set<number>>(new Set());
+  const [isSupportOpen, setIsSupportOpen] = useState(false);
   const [selectedFaceItems, setSelectedFaceItems] = useState<SelectedFace[]>([]);
   const { t, language } = useLanguage();
   const { toast } = useToast();
@@ -100,9 +114,7 @@ export const AuthFlow = ({
       //   // טעינת משתמשים קשורים
       //   try {
       //     // const usersResponse = await apiService.getUserForUser(user.id);
-      //     // console.log('Related users loaded:', usersResponse);
       //   } catch (error) {
-      //     console.log('No related users found or error loading users:', error);
       //   }
 
       //   toast({
@@ -118,6 +130,36 @@ export const AuthFlow = ({
         description: t("auth.dataError"),
         variant: "default",
       });
+    }
+  };
+
+  // ── Check for survey before completing registration ──────────────────────
+  const checkAndShowSurvey = async (userId: number, proceed: () => void) => {
+    try {
+      const survey = await apiService.getSurveyByEvent(event.id);
+      if (!survey) { proceed(); return; }
+      const alreadyDone = await apiService.hasSurveyUserResponded(survey.id, userId);
+      if (alreadyDone) { proceed(); return; }
+
+      // Name — hide if anonymous
+      const rawName = sessionStorage.getItem('userFullName') ?? '';
+      const displayName = (rawName && rawName.toLowerCase() !== 'anonymous') ? rawName : '';
+
+      // Photo count — best-effort, silent on failure
+      let photoCount: number | null = null;
+      try {
+        const imgs = await apiService.getImages(userId, event.id);
+        if (Array.isArray(imgs)) photoCount = imgs.length;
+        else if (imgs?.photos) photoCount = imgs.photos.length;
+      } catch { /* silent */ }
+
+      setPendingSurvey(survey);
+      setPendingUserName(displayName);
+      setPendingPhotoCount(photoCount);
+      setPendingComplete(() => proceed);
+      setCurrentStep('survey');
+    } catch {
+      proceed();
     }
   };
 
@@ -186,6 +228,20 @@ export const AuthFlow = ({
 
           if (userAuth && userAuth.user && userAuth.user.id) {
             setLoadingMessage(t("auth.existingUserFound"));
+
+            // Paid gallery check for returning users too
+            if (event.isPaidGallery) {
+              const paymentStatus = await apiService.verifyGalleryPayment(contactInfo, event.id);
+              if (!paymentStatus.isPaid) {
+                // Store the user — onSuccess will complete the flow for them
+                setExistingUserPendingPayment(userAuth.user);
+                setCurrentStep("payment");
+                setIsLoading(false);
+                setLoadingMessage("");
+                return;
+              }
+            }
+
             sessionStorage.setItem("userid", userAuth.user.id.toString());
             sessionStorage.setItem("userFullName", userAuth.user.fullName || "Anonymous");
             sessionStorage.setItem("isRegister", "true");
@@ -202,6 +258,17 @@ export const AuthFlow = ({
               variant: "default",
             });
           } else {
+            // New user — check gallery payment before selfie
+            if (event.isPaidGallery) {
+              const paymentStatus = await apiService.verifyGalleryPayment(contactInfo, event.id);
+              if (!paymentStatus.isPaid) {
+                setIsVisible(false);
+                setCurrentStep("payment");
+                setIsLoading(false);
+                setLoadingMessage("");
+                return;
+              }
+            }
             setIsVisible(false);
             const timer = setTimeout(() => {
               setIsVisible(true);
@@ -291,11 +358,22 @@ export const AuthFlow = ({
   };
 
   const detectMultipleFaces = async (formData) => {
+
     const registrationResponse = event.needDetect ? await apiService.registerUser(formData) : await apiService.registerUserByPhoto(formData);
     if (registrationResponse.isMultipleFaces) {
       setDetectedFaces(registrationResponse.faceImageUrls);
       setSelectedFaces(new Set(registrationResponse.faceImageUrls.map((_, i) => i)));
       if (registrationResponse.faceImageUrls.length == 1) {
+        const selected: Set<number> = new Set(
+          registrationResponse.faceImageUrls.map((_, i) => i)
+        );
+        const detected: string[] = registrationResponse.faceImageUrls
+
+        if(event.registerWithName){
+          goToNamesStep(selected,detected);
+          return;
+        }
+
         await registerSelectedFaces(registrationResponse.faceImageUrls, false);
         return;
       }
@@ -307,24 +385,32 @@ export const AuthFlow = ({
   }
 
   const eventWithDetectRegister = async (registrationResponse: any) => {
+  
     if (registrationResponse && registrationResponse.token) {
       sessionStorage.setItem("jwtUser", registrationResponse.token);
       sessionStorage.setItem("isRegister", "true");
 
-      // שליחת SMS עם קישור לגלריה (רק לטלפון)
-      if (!isEmailMode && registrationResponse.user?.id) {
+      if (registrationResponse.user?.id && notifications) {
         try {
           setLoadingMessage(t("auth.sendingGalleryLink"));
-          await apiService.sendWelcomeSMS(
-            contactInfo,
-            event.eventLink,
-            registrationResponse.user.id
-          );
-        } catch (smsError) {
-          console.error("Failed to send welcome SMS:", smsError);
+          if (isEmailMode) {
+            await apiService.sendWelcomeEmail(
+              contactInfo,
+              event.eventLink,
+              registrationResponse.user.id
+            );
+          } else {
+            await apiService.sendWelcomeSMS(
+              contactInfo,
+              event.eventLink,
+              registrationResponse.user.id
+            );
+          }
+        } catch (notifyError) {
+          console.error("Failed to send welcome notification:", notifyError);
           toast({
             title: t("auth.alert"),
-            description: t("auth.smsWarning"),
+            description: isEmailMode ? t("auth.emailWarning") : t("auth.smsWarning"),
             variant: "default",
           });
         }
@@ -333,9 +419,6 @@ export const AuthFlow = ({
         await setUserData(registrationResponse.user);
       }
 
-      setCurrentStep("complete");
-      onComplete(registrationResponse.user);
-      onCancel();
       toast({
         title: t("auth.registrationSuccess"),
         description: isEmailMode
@@ -343,6 +426,13 @@ export const AuthFlow = ({
           : t("auth.registrationSuccessWithSMS"),
         variant: "default",
       });
+
+      const proceed = () => {
+        setCurrentStep("complete");
+        onComplete(registrationResponse.user);
+        onCancel();
+      };
+      await checkAndShowSurvey(registrationResponse.user?.id, proceed);
     } else {
       throw new Error("Registration failed - no token received");
     }
@@ -357,25 +447,49 @@ export const AuthFlow = ({
           ? "Email"
           : "PhoneNumber"
         : "Selfie",
-      faces: faces.map((f) => ({
-        imageUrl: faceWithName ? f.imageUrl : f,
-        name: faceWithName ? f.name : "Anonymous",
-      })),
+        faces: faces.map((f) => ({
+          imageUrl: faceWithName ? f.imageUrl : f,
+          name: faceWithName ? f.name : "Anonymous",
+        })),
+        sendNotification: notifications.toString()
     };
     const result = await apiService.registerSelectedFaces(payload);
+    if (notifications) {
+      console.log("Sending welcome notification to user ID:", isEmailMode);
+      if (isEmailMode) {
+
+        await apiService.sendWelcomeEmail(
+          contactInfo,
+          event.eventLink,
+          result.user.id
+        );
+      } else {
+        await apiService.sendWelcomeSMS(
+          contactInfo,
+          event.eventLink,
+          result.user.id
+        );
+      }
+    }
     sessionStorage.setItem("jwtUser", result.token);
     sessionStorage.setItem("userid", result.user.id.toString());
     await setUserData(result.user);
-    setCurrentStep("complete");
-    onComplete(result.user);
-    onCancel();
-    return;
+    const proceed = () => {
+      setCurrentStep("complete");
+      onComplete(result.user);
+      onCancel();
+    };
+    await checkAndShowSurvey(result.user.id, proceed);
+    return result;
   }
 
-  const goToNamesStep = () => {
-    const facesWithNames: SelectedFace[] = [...selectedFaces].map((index) => ({
+const goToNamesStep = (selectedFacesParam?: Set<number>, detectedFacesParam?: string[]) => {
+  const faces = selectedFacesParam ?? selectedFaces;
+  const detected = detectedFacesParam ?? detectedFaces;
+
+  const facesWithNames: SelectedFace[] = [...faces].map((index) => ({
       index,
-      imageUrl: detectedFaces[index],
+      imageUrl: detected[index],
       name: "",
     }));
 
@@ -391,6 +505,53 @@ export const AuthFlow = ({
     names: t("auth.enterNames"),
     complete: t("auth.registrationComplete"),
   };
+
+  // ── Paid gallery payment screen (full-screen, outside the regular modal) ──
+  if (currentStep === "payment" && event.isPaidGallery && event.galleryPaymentLink) {
+    return (
+      <GalleryPaymentModal
+        eventId={event.id}
+        phoneNumber={contactInfo}
+        paymentLink={event.galleryPaymentLink}
+        language={language === "he" ? "he" : "en"}
+        onSuccess={async () => {
+          if (existingUserPendingPayment) {
+            // Returning user — payment done, complete the login flow
+            const user = existingUserPendingPayment;
+            sessionStorage.setItem("userid", user.id.toString());
+            sessionStorage.setItem("userFullName", user.fullName || "Anonymous");
+            sessionStorage.setItem("isRegister", "true");
+            await setUserData(user);
+            setCurrentStep("complete");
+            onComplete(user);
+            onCancel();
+          } else {
+            // New user — continue to selfie registration
+            setCurrentStep("selfie");
+            setIsVisible(true);
+          }
+        }}
+        onCancel={onCancel}
+      />
+    );
+  }
+
+  // ── Survey screen ─────────────────────────────────────────────────────────
+  if (currentStep === 'survey' && pendingSurvey) {
+    const userId = parseInt(sessionStorage.getItem('userid') ?? '0', 10);
+    return (
+      <SurveyModal
+        survey={pendingSurvey}
+        userId={userId}
+        language={language === 'he' ? 'he' : 'en'}
+        userName={pendingUserName}
+        photoCount={pendingPhotoCount}
+        onDone={() => {
+          if (pendingComplete) pendingComplete();
+        }}
+      />
+    );
+  }
 
   return (
     <div
@@ -477,23 +638,20 @@ export const AuthFlow = ({
             <FaceSelectionGrid
               faces={detectedFaces}
               selected={selectedFaces}
-              onBack={() => {
-                const returnToStep = selectedFaceItems.length > 1 ? "selectFaces" : "selfie";
-                setCurrentStep(returnToStep);
-              }}
+              onBack={() => setCurrentStep("selfie")}
               onToggle={(index) => {
                 const copy = new Set(selectedFaces);
                 copy.has(index) ? copy.delete(index) : copy.add(index);
                 setSelectedFaces(copy);
               }}
-              onContinue={goToNamesStep}
+              onContinue={() => goToNamesStep()}
             />
           )}
           {currentStep === "names" && (
             <FaceNamesForm
               faces={selectedFaceItems}
               isLoading={isLoading}
-              onBack={() => setCurrentStep("selectFaces")}
+              onBack={() => setCurrentStep(detectedFaces.length <= 1 ? "selfie" : "selectFaces")}
               onSubmit={async (faces) => {
                 try {
                   setIsLoading(true);
@@ -515,6 +673,28 @@ export const AuthFlow = ({
             />
           )}
         </div>
+
+        {/* Support footer — visible on the entry step only */}
+        {currentStep === "contact" && !isLoading && (
+          <div className="px-6 pb-5 pt-1 border-t border-border/50">
+            <p className="text-center text-xs text-muted-foreground">
+              {language === "he" ? "יש שאלה או צריכים עזרה? " : "Have a question or need help? "}
+              <button
+                onClick={() => setIsSupportOpen(true)}
+                className="text-primary font-medium hover:underline inline-flex items-center gap-1"
+              >
+                {language === "he" ? " לתמיכה" : "Contact support"}
+              </button>
+            </p>
+          </div>
+        )}
+
+        <FAQSupportDialog
+          isOpen={isSupportOpen}
+          setIsOpen={setIsSupportOpen}
+          questions={faqData[language] || faqData.he}
+          event={event}
+        />
       </div>
     </div>
   );

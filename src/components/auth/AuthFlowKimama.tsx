@@ -22,6 +22,7 @@ interface AuthFlowProps {
   event: event;
   onComplete: (userData: User) => void;
   onCancel: () => void;
+  onLinkOpen: () => void;
   setUsers: (users: any[]) => void;
   needsFullAuth?: boolean;
   userPhone?: string;
@@ -30,6 +31,7 @@ interface AuthFlowProps {
 export const AuthFlowKimama = ({
   event,
   onComplete,
+  onLinkOpen,
   onCancel,
   userPhone = null,
   setUsers,
@@ -63,7 +65,6 @@ export const AuthFlowKimama = ({
     []
   );
   const isEmailMode = event?.registerBy === "Email";
-  console.log("User Phone in AuthFlowKimama:", userPhone);  
   useEffect(() => {
     if (currentStep === "contact") {
       setIsVisible(true);
@@ -113,7 +114,7 @@ export const AuthFlowKimama = ({
       });
     }
   };
-
+ 
   const handleContactSubmit = async (
     contact: string,
     notificationPreference: boolean
@@ -232,29 +233,29 @@ export const AuthFlowKimama = ({
       setLoadingMessage("");
     }
   };
-const detectMultipleFaces = async (formData) => {
-  const registrationResponse = await apiService.registerUser(formData);
+  const detectMultipleFaces = async (formData) => {
+    const registrationResponse = await apiService.registerUser(formData);
 
-  const faces = registrationResponse.faceImageUrls || [];
+    const faces = registrationResponse.faceImageUrls || [];
 
-  if (faces.length > 0) {
-    setDetectedFaces(faces);
-    setSelectedFaces(new Set(faces.map((_, i) => i)));
+    if (faces.length > 0) {
+      setDetectedFaces(faces);
+      setSelectedFaces(new Set(faces.map((_, i) => i)));
 
-    const faceItems: SelectedFace[] = faces.map((url, i) => ({
-      index: i,
-      imageUrl: url,
-      name: "",
-    }));
-    setSelectedFaceItems(faceItems);
+      const faceItems: SelectedFace[] = faces.map((url, i) => ({
+        index: i,
+        imageUrl: url,
+        name: "",
+      }));
+      setSelectedFaceItems(faceItems);
 
-    const nextStep = faces.length > 1 ? "selectFaces" : "names";
-    setCurrentStep(nextStep);
-    return;
+      const nextStep = faces.length > 1 ? "selectFaces" : "names";
+      setCurrentStep(nextStep);
+      return;
+    }
+
+    await eventWithDetectRegister(registrationResponse);
   }
-
-  await eventWithDetectRegister(registrationResponse);
-}
 
 
   const eventWithDetectRegister = async (registrationResponse: any) => {
@@ -295,9 +296,9 @@ const detectMultipleFaces = async (formData) => {
   }
   const registerSelectedFaces = async (faces, faceWithName) => {
     const payload: RegisterFacesRequest = {
-      reRegister: userPhone ? true :  false,
+      reRegister: userPhone ? true : false,
       eventId: event.id,
-      contactInfo: userPhone ?? contactInfo  ,
+      contactInfo: userPhone ?? contactInfo,
       authenticateBy: "PhoneNumber",
       faces: faces.map((f) => ({
         imageUrl: faceWithName ? f.imageUrl : f,
@@ -336,7 +337,7 @@ const detectMultipleFaces = async (formData) => {
   return (
     // <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" dir={language === 'he' ? 'rtl' : 'ltr'}
     // style={{visibility: isVisible ? 'visible' : 'hidden'}}>
-<div className="bg-background border border-border rounded-t-3xl shadow-lg w-full max-w-md max-h-[60vh] overflow-y-auto">
+    <div className="bg-background border border-border rounded-t-3xl shadow-lg w-full max-w-md max-h-[67vh] overflow-y-auto">
       {/* Header */}
       <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between">
@@ -374,7 +375,7 @@ const detectMultipleFaces = async (formData) => {
               className={`flex items-center gap-3 color text-[#FFB347] ${language === "he" ? "flex-row-reverse" : "flex-row"}`}
             >
               <p className="text-muted-foreground text-sm  ">{loadingMessage}</p>
-                <div className="w-6 h-6 border-4 border-[#FFB347] border-t-transparent rounded-full animate-spin" />
+              <div className="w-6 h-6 border-4 border-[#FFB347] border-t-transparent rounded-full animate-spin" />
             </div>
           </div>
         )}
@@ -387,9 +388,10 @@ const detectMultipleFaces = async (formData) => {
           ) : (
             <PhoneCountryInputKimama
               onSubmit={handleContactSubmit}
-              // onBack={onCancel}
+              onLinkOpen={onLinkOpen}
               submitText={t("auth.continue")}
               variant="kimama"
+              event={event}
             />
           ))}
 
@@ -408,7 +410,7 @@ const detectMultipleFaces = async (formData) => {
             faces={detectedFaces}
             selected={selectedFaces}
             onBack={() => setCurrentStep("selfie")}
-             variant="kimama"
+            variant="kimama"
             onToggle={(index) => {
               const copy = new Set(selectedFaces);
               copy.has(index) ? copy.delete(index) : copy.add(index);
@@ -450,7 +452,14 @@ const detectMultipleFaces = async (formData) => {
           />
         )}
       </div>
+
+
+
+
+
+
     </div>
+
     // </div>
   );
 };

@@ -188,7 +188,6 @@ const Index = ({ isKimama = false }: IndexProps) => {
     }
   }, []);
   useEffect(() => {
-    console.log("ShowAuthFlow changed:", showAuthFlow);
   }, [showAuthFlow]);
 
   useEffect(() => {
@@ -205,10 +204,13 @@ const Index = ({ isKimama = false }: IndexProps) => {
     const keyParam = params.get("access");
     if (!keyParam) return;
 
-    const decoded = atob(keyParam); // פענוח מ־Base64
-    if (decoded === baseUrl) {
-      setshowAllPhotosBt(true);
-    }
+    // Secure server-side token verification — no more base64 trickery
+    (async () => {
+      const eventLinkParam = window.location.pathname.replace(/^\//, '').split('/')[0];
+      if (!eventLinkParam) return;
+      const isValid = await apiService.verifyAdminToken(eventLinkParam, keyParam);
+      if (isValid) setshowAllPhotosBt(true);
+    })();
   }, []);
 
   useEffect(() => {
@@ -410,7 +412,6 @@ const Index = ({ isKimama = false }: IndexProps) => {
       //   loadUserImages(currentUser, true);
       //   return;
       // }
-      console.log("Switching to my photos for user:", user);
       if (!isAuthenticated && !urlUserId && !user.relatedToUserId) {
         setShowAuthFlow(true);
         return;
@@ -561,6 +562,7 @@ const Index = ({ isKimama = false }: IndexProps) => {
         <div id="gallery">
           <Gallery
             event={event}
+            isKimama={isKimama}
             images={filteredImages}
             favoriteImages={favoriteImages}
             onToggleFavorite={handleToggleFavorite}
@@ -611,6 +613,7 @@ const Index = ({ isKimama = false }: IndexProps) => {
           event={event}
           onSubscribe={handleNotificationSubscribe}
           onClose={() => setShowNotificationSubscription(false)}
+          isKimama={isKimama}
           initialStep={initialStepNotification}
         />
       )}
@@ -621,6 +624,7 @@ const Index = ({ isKimama = false }: IndexProps) => {
         onClose={() => setShowDownloadModal(false)}
         imageCount={galleryImages.length}
         images={galleryImages}
+        isKimama={isKimama}
         autoDownload={galleryImages.length <= 20}
         albumName={event?.name || "כל התמונות"}
         galleryType={galleryType}

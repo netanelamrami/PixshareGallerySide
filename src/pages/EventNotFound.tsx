@@ -28,7 +28,6 @@ export const EventNotFound = () => {
             return;
           }
         } catch (error) {
-          console.log("Event still not found");
         }
         setIsRetrying(false);
       }
@@ -48,7 +47,6 @@ export const EventNotFound = () => {
         return;
       }
     } catch (error) {
-      console.log("Event still not found");
     }
     setIsRetrying(false);
   };
