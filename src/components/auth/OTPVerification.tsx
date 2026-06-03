@@ -34,7 +34,7 @@ export const OTPVerification = ({ phoneNumber, onSubmit, onBack, isEmailMode = f
     setIsLoading(true);
     e.preventDefault();
     
-    if (otp.length !== 4) return;
+    if (otp.length !== 6) return;
      const isVerified = await apiService.verifyOTP(phoneNumber,otp)
     if (!isVerified) {
       toast({
@@ -100,7 +100,7 @@ export const OTPVerification = ({ phoneNumber, onSubmit, onBack, isEmailMode = f
 
       <div className="flex justify-center">
         <InputOTP
-          maxLength={4}
+          maxLength={6}
           value={otp}
           onChange={setOtp}
           autoFocus
@@ -110,6 +110,8 @@ export const OTPVerification = ({ phoneNumber, onSubmit, onBack, isEmailMode = f
             <InputOTPSlot index={1} />
             <InputOTPSlot index={2} />
             <InputOTPSlot index={3} />
+            <InputOTPSlot index={4} />
+            <InputOTPSlot index={5} />
           </InputOTPGroup>
         </InputOTP>
       </div>
@@ -146,7 +148,7 @@ export const OTPVerification = ({ phoneNumber, onSubmit, onBack, isEmailMode = f
          <Button
           type="submit"
           className="flex-1"
-          disabled={otp.length !== 4 || isLoading}
+          disabled={otp.length !== 6 || isLoading}
         >
           {isLoading ? (
             <div className={`flex items-center gap-2 ${language === 'he' ? 'flex-row-reverse' : 'flex-row'}`}>

@@ -1,0 +1,4 @@
+# This explicitly allows only these trusted packages to execute native build scripts
+allowBuilds:
+  esbuild: true
+  "@swc/core": true
