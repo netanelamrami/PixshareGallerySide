@@ -10,9 +10,10 @@ interface SelfieCaptureProps {
   autoOpenCamera?: boolean;
   withBTAction: boolean;
   variant?: "default" | "kimama";
+  primaryColor?: string;
 }
 
-export const SelfieCapture = ({ onCapture, onBack, variant = "default", autoOpenCamera, withBTAction = true }: SelfieCaptureProps) => {
+export const SelfieCapture = ({ onCapture, onBack, variant = "default", autoOpenCamera, withBTAction = true, primaryColor }: SelfieCaptureProps) => {
   const [isCapturing, setIsCapturing] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -171,11 +172,11 @@ export const SelfieCapture = ({ onCapture, onBack, variant = "default", autoOpen
               )}
               <Button onClick={startCamera} disabled={isLoading}
                 className={`flex-1 ${variant === "kimama"
-                    ? `
-                    bg-gradient-to-r from-[#FF8C00] via-[#FFA13A] to-[#FFB703] text-white shadow-md hover:shadow-lg active:scale-95 transition-all
-                  `
-                    : ""
-                  }`}>
+                  ? "bg-gradient-to-r from-[#FF8C00] via-[#FFA13A] to-[#FFB703] text-white shadow-md hover:shadow-lg active:scale-95 transition-all"
+                  : ""
+                }`}
+                style={primaryColor && variant !== "kimama" ? { background: primaryColor, color: "#fff", border: "none" } : undefined}
+              >
                 {isLoading ? (
                   <div className={`flex items-center gap-2 ${language === 'he' ? 'flex-row-reverse' : 'flex-row'}`}>
                     <span>{t('auth.loading')}</span>
@@ -263,7 +264,6 @@ export const SelfieCapture = ({ onCapture, onBack, variant = "default", autoOpen
       <div className="flex gap-3">
         {isCapturing && (
           <>
-
             <Button
               type="button"
               variant="outline"
@@ -275,10 +275,11 @@ export const SelfieCapture = ({ onCapture, onBack, variant = "default", autoOpen
             <Button
               onClick={capturePhoto}
               className={`flex-1 ${variant === "kimama"
-                  ? `  bg-gradient-to-r from-[#FF8C00] via-[#FFA13A] to-[#FFB703] text-white shadow-md hover:shadow-lg active:scale-95 transition-all`
-                  : ""
-                }`}>
-
+                ? "bg-gradient-to-r from-[#FF8C00] via-[#FFA13A] to-[#FFB703] text-white shadow-md hover:shadow-lg active:scale-95 transition-all"
+                : ""
+              }`}
+              style={primaryColor && variant !== "kimama" ? { background: primaryColor, color: "#fff", border: "none" } : undefined}
+            >
               <Camera className="w-4 h-4 mr-2" />
               {t('auth.takePhoto')}
             </Button>
@@ -296,16 +297,14 @@ export const SelfieCapture = ({ onCapture, onBack, variant = "default", autoOpen
               {t('auth.retake')}
             </Button>
             {withBTAction && (
-
               <Button
                 onClick={confirmPhoto}
                 className={`flex-1 ${variant === "kimama"
-                    ? `
-                    bg-gradient-to-r from-[#FF8C00] via-[#FFA13A] to-[#FFB703] text-white shadow-md hover:shadow-lg active:scale-95 transition-all
-                  `
-                    : ""
-                  }`}>
-
+                  ? "bg-gradient-to-r from-[#FF8C00] via-[#FFA13A] to-[#FFB703] text-white shadow-md hover:shadow-lg active:scale-95 transition-all"
+                  : ""
+                }`}
+                style={primaryColor && variant !== "kimama" ? { background: primaryColor, color: "#fff", border: "none" } : undefined}
+              >
                 <Check className="w-4 h-4 mr-2" />
                 {t('auth.confirm')}
               </Button>

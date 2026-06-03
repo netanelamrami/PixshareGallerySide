@@ -191,13 +191,22 @@ export const KimamaForm = ({ event, onViewAllPhotos, onViewMyPhotos, onComplete,
         {/* <div className="absolute top-6 right-6 z-30">
           <SettingsMenu event={event} />
         </div> */}
-        <div className="absolute top-6 right-6 z-30">
+<div className="absolute top-6 px-4 w-full z-30 flex gap-2 justify-between items-center">
           <button
             onClick={() => setIsFaqOpen(true)}
             className="bg-white/20 backdrop-blur-sm text-white rounded-full p-2 hover:bg-white/30 transition"
           >
             <Info className="w-6 h-6" />
           </button>
+
+                  {/* Language Toggle */}
+              <button
+                onClick={() => setLanguage(language === "he" ? "en" : "he")}
+                className="  flex items-center text-start gap-2 bg-white/20 hover:bg-white/30 text-white rounded-full px-2.5 py-2.5 transition text-sm font-medium"
+              >
+                <span>{language === "he" ? "EN" : "עב"}</span>
+              </button>
+
         </div>
         {/* kimama logo */}
         <div className="absolute top-8 left-1/2 -translate-x-1/2 z-30">

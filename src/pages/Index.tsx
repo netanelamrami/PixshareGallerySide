@@ -240,6 +240,9 @@ const Index = ({ isKimama = false }: IndexProps) => {
     const fetchUserAndImages = async () => {
       if (urlUserId && event) {
         try {
+          // Clear any stale session data from a previous user before loading new user
+          sessionStorage.setItem('userid', urlUserId.toString());
+          sessionStorage.removeItem('favoriteImages');
           const { user } = await apiService.loginUser(Number(urlUserId));
           handleAuthComplete(user);
         } catch (err) {

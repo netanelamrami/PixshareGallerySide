@@ -684,10 +684,10 @@ https://gallery.pixshare.live/${eventLink}?userid=${userId}
     return res.json();
   },
 
-  /** Get site stats (optionally per-user). */
+  /** Get site stats (optionally per-user). Always bypasses browser cache. */
   async getSiteStats(siteId: number, userId?: number): Promise<any> {
-    const query = userId ? `?userId=${userId}` : '';
-    const res = await fetch(`${BASE_URL}/Site/${siteId}/stats${query}`);
+    const query = userId ? `?userId=${userId}&_t=${Date.now()}` : `?_t=${Date.now()}`;
+    const res = await fetch(`${BASE_URL}/Site/${siteId}/stats${query}`, { cache: 'no-store' });
     if (!res.ok) throw new Error('Failed to get site stats');
     return res.json();
   },
@@ -714,7 +714,7 @@ https://gallery.pixshare.live/${eventLink}?userid=${userId}
   async siteLoginByContact(
     siteId: number,
     contact: { email?: string; phoneNumber?: string }
-  ): Promise<{ success: boolean; userId?: number; name?: string; photoUrl?: string; message?: string }> {
+  ): Promise<{ success?: boolean; userId?: number; name?: string; photoUrl?: string; message?: string; blocked?: boolean; reason?: string }> {
     try {
       const res = await fetch(`${BASE_URL}/Site/${siteId}/login-by-contact`, {
         method: 'POST',
@@ -725,6 +725,23 @@ https://gallery.pixshare.live/${eventLink}?userid=${userId}
       return res.json();
     } catch {
       return { success: false };
+    }
+  },
+
+  async siteSubmitAccessRequest(
+    siteId: number,
+    payload: { email: string; name?: string; note?: string }
+  ): Promise<{ id: number } | null> {
+    try {
+      const res = await fetch(`${BASE_URL}/Site/${siteId}/access-requests`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) return null;
+      return res.json();
+    } catch {
+      return null;
     }
   },
 }

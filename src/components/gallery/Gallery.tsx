@@ -307,6 +307,8 @@ useEffect(() => {
 
   const handleDownloadAll = () => {
     setShowDownloadModal(true);
+    console.log("Download all images from album:", galleryType);
+    
   };
 
   const handleDownloadSelected = async () => {
@@ -807,6 +809,7 @@ useEffect(() => {
         autoDownload={false}
         event={event}
         isKimama={isKimama}
+        galleryType={galleryType}
       />
 
       <BackToTopButton />

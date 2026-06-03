@@ -640,6 +640,11 @@ const goToNamesStep = (selectedFacesParam?: Set<number>, detectedFacesParam?: st
               selected={selectedFaces}
               onBack={() => setCurrentStep("selfie")}
               onToggle={(index) => {
+                  if (event.id === 855) {
+                    setSelectedFaces(new Set([index]));
+                    return;
+                  }
+                  
                 const copy = new Set(selectedFaces);
                 copy.has(index) ? copy.delete(index) : copy.add(index);
                 setSelectedFaces(copy);

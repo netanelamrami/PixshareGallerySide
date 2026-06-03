@@ -95,6 +95,7 @@ export const DownloadModal = ({ isOpen, onClose, imageCount, isKimama, images = 
           });
         }
       } else {
+        console.log(galleryType)
         // For large albums - API request
         const userId = parseInt(sessionStorage.getItem('userid') || '0');
         const phoneData = formData.phone ? `${formData.countryCode}${formData.phone.replace(/^0/, '')}` : '';

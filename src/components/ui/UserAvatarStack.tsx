@@ -325,7 +325,7 @@ export const UserAvatarStack = ({ totalImages, onDownloadAll, event, onAuthCompl
                 </>
               )}
               {/* Add User - only if less than 3 users */}
-              {users.length < 50 && (
+              {users.length < 50 && event.id !== 855 && (
                 <Button
                   variant="ghost"
                   className="w-full h-auto p-2 justify-start hover:bg-muted/50"
